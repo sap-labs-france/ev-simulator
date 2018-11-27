@@ -1,6 +1,7 @@
 const Configuration = require('./Configuration');
 const uuidV4 = require('uuid/v4');
 const Constants = require('./Constants');
+const Statistics = require('./Statistics');
 
 class Utils {
 	static generateGUID() {
@@ -104,7 +105,7 @@ class Utils {
 	}
 
 	static logPerformance(entry, className) {
-
+		Statistics.addPerformanceTimer(entry.name, entry.duration);
 		console.log(`${className}: ${entry.name} ${entry.duration}`);
 	}
 		

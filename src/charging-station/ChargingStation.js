@@ -11,7 +11,6 @@ const {performance, PerformanceObserver } = require('perf_hooks');
 const _performanceObserver  = new PerformanceObserver((list) => {
         let entry = list.getEntries()[0];
         Utils.logPerformance(entry, 'ChargingStation');
-        console.log(`ChargingStation: ${entry.name} ${entry.duration}`);
         _performanceObserver.disconnect();
   });
 class ChargingStation {

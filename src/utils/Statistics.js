@@ -26,6 +26,33 @@ class Statistics {
         }
     }
 
+    static addPerformanceTimer(command, duration){
+        let currentStatistics;
+// Map to proper commande name
+        const MAPCOMMAND = {
+            sendMeterValues : 'MeterValues',
+            startTransaction : 'StartTransaction',
+            stopTransaction : 'StopTransaction'
+        }
+        if (MAPCOMMAND[command]) { // get current command statistics
+            currentStatistics = _statistics[MAPCOMMAND[command]];
+        } else if (_statistics[command]) {
+            currentStatistics = _statistics[command];
+        } else {
+            _statistics[command] = {};
+            currentStatistics = _statistics[command];
+        }
+
+        if (currentStatistics) {
+// update current statistics timers
+            currentStatistics.countTime = (currentStatistics.countTime ? currentStatistics.countTime + 1 : 1);
+            currentStatistics.minTime = (currentStatistics.minTime ? (currentStatistics.minTime > duration ? duration : currentStatistics.minTime) :  duration);
+            currentStatistics.maxTime = (currentStatistics.maxTime ? (currentStatistics.maxTime < duration ? duration : currentStatistics.maxTime) :  duration);
+            currentStatistics.totalTime = (currentStatistics.totalTime ? currentStatistics.totalTime + duration : duration);
+            currentStatistics.avgTime = currentStatistics.totalTime / currentStatistics.countTime;
+        }
+    }
+
     static display() {
         let date=new Date();
         console.log(date.toISOString().substr(0, 19) + " STATISTICS START");
@@ -36,7 +63,7 @@ class Statistics {
     static async start() {
         if (Configuration.getStatisticsDisplayInterval()) {
             console.log("Statistics displayed every " + Configuration.getStatisticsDisplayInterval() + "s");
-            consol.log("Configuration " + JSON.stringify(Configuration.getConfig(), null, " "));
+            console.log("Configuration " + JSON.stringify(Configuration.getConfig(), null, " "));
             setInterval(() => {
                 Statistics.display()
             }, Configuration.getStatisticsDisplayInterval()*1000);
