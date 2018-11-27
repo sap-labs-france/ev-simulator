@@ -2,8 +2,14 @@ const CharginStation = require('./ChargingStation');
 const Configuration = require('../utils/Configuration');
 const Constants = require('../utils/Constants');
 const Utils = require('../utils/Utils');
+const {performance, PerformanceObserver } = require('perf_hooks');
 
 const _automaticConfiguration = Configuration.getAutomaticTransactionConfiguration();
+const _performanceObserver  = new PerformanceObserver((list) => {
+        const entry = list.getEntries()[0];
+        Utils.logPerformance(entry, 'AutomaticTransactionGenerator');
+        _performanceObserver.disconnect();
+  });
 
 class AutomaticTransactionGenerator {
     constructor(chargingStation) {
@@ -54,7 +60,9 @@ class AutomaticTransactionGenerator {
                 skip = 0;
                 //start transaction
                 console.log(this.basicLog(connectorId) + " Start transaction  ");                
-                await this._chargingStation.sendStartTransaction(connectorId);
+                const startTransaction = performance.timerify(this.startTransaction);
+                _performanceObserver.observe({entryTypes: ['function']});
+                await startTransaction(connectorId, this);
                 // wait until end of transaction
                 let wait = Utils.getRandomInt(_automaticConfiguration.maxDuration, _automaticConfiguration.minDuration)* 1000;
                 console.log(this.basicLog(connectorId) + " transaction " + this._chargingStation._connectors[connectorId].transactionId + " will stop in " + Utils.secondstoHHMMSS(wait/1000));
@@ -62,7 +70,10 @@ class AutomaticTransactionGenerator {
                 // Stop transaction
                 if (this._chargingStation._connectors[connectorId].transactionStarted) {
                     console.log(this.basicLog(connectorId) + " Stop transaction " + this._chargingStation._connectors[connectorId].transactionId);
-                    await this._chargingStation.sendStopTransaction(this._chargingStation._connectors[connectorId].transactionId, connectorId);
+                    const stopTransaction = performance.timerify(this.stopTransaction);
+                    _performanceObserver.observe({entryTypes: ['function']});
+                    await stopTransaction(connectorId, this);
+                    
                 }
             } else {
                 skip++;
@@ -71,6 +82,16 @@ class AutomaticTransactionGenerator {
         } while (!this._timeToStop);
         console.log("ATG for station  " + this._chargingStation._stationInfo.name + " is STOPPED");
     }
+
+    async startTransaction(connectorId, self) {
+        await self._chargingStation.sendStartTransaction(connectorId);
+    }
+
+    async stopTransaction(connectorId, self) {
+        await self._chargingStation.sendStopTransaction(self._chargingStation._connectors[connectorId].transactionId, connectorId);
+    }
+
+
 }
 
 module.exports = AutomaticTransactionGenerator;

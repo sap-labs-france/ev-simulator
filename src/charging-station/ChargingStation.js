@@ -6,7 +6,14 @@ const OCPPError = require('./OcppError');
 const uuid = require('uuid/v4');
 const AutomaticTransactionGenerator = require('./AutomaticTransactionGenerator');
 const Statistics = require('../statistics');
+const {performance, PerformanceObserver } = require('perf_hooks');
 
+const _performanceObserver  = new PerformanceObserver((list) => {
+        let entry = list.getEntries()[0];
+        Utils.logPerformance(entry, 'ChargingStation');
+        console.log(`ChargingStation: ${entry.name} ${entry.duration}`);
+        _performanceObserver.disconnect();
+  });
 class ChargingStation {
     constructor(index) {
         this._requests = {};
@@ -347,7 +354,7 @@ class ChargingStation {
     async handleRemoteStartTransaction(commandPayload) {
         let transactionConnectorID = ( commandPayload.hasOwnProperty("connectorId") ? commandPayload.connectorId : "1" );
 
-        setTimeout( () => this.sendStartTransaction(transactionConnectorID, commandPayload.idTag), 1000 );
+        setTimeout( () => this.sendStartTransaction(transactionConnectorID, commandPayload.idTag), 500 );
         
         return {
             status: "Accepted"
@@ -377,42 +384,47 @@ class ChargingStation {
         }
     }
 
-    async startMeterValues(self, connectorID, interval) {
-        if (!this._isStarted && !this._connectors[connectorID].transactionStarted) return;
-        const chargingStation = self;
-        this._connectors[connectorID].transactionInterval = setInterval(() => {
-            try {
-                let sampledValueLcl = {
-                    timestamp: new Date().toISOString(),
-                };
-                let meterValuesClone = JSON.parse(JSON.stringify(Configuration.getChargingStationConnector(connectorID).MeterValues));
-                if (Array.isArray(meterValuesClone)) {
-                    sampledValueLcl.sampledValue = meterValuesClone;
-                }
-                else  {
-                    sampledValueLcl.sampledValue = [meterValuesClone];
-                }
-                for (let index = 0; index < sampledValueLcl.sampledValue.length; index++) {
-                    if (sampledValueLcl.sampledValue[index].measurand && sampledValueLcl.sampledValue[index].measurand === 'SoC') {
-                        sampledValueLcl.sampledValue[index].value = Math.floor(Math.random()*100)+1;
-                        if (sampledValueLcl.sampledValue[index].value > 100)
-                        console.log("Meter type: "+ (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') + " value: " + sampledValueLcl.sampledValue[index].value);
-                    } else {
-                        sampledValueLcl.sampledValue[index].value = (Math.floor(Math.random()*this._stationInfo.maxPower-500)+500) * 3600 / interval;
-                        if (sampledValueLcl.sampledValue[index].value > (this._stationInfo.maxPower* 3600 / interval))
-                        console.log("Meter type: "+ (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') + " value: " + sampledValueLcl.sampledValue[index].value + "/" + (this._stationInfo.maxPower* 3600 / interval));
-                    }
-                    
+    async sendMeterValues(self, connectorID, interval) {
+        try {
+            let sampledValueLcl = {
+                timestamp: new Date().toISOString(),
+            };
+            let meterValuesClone = JSON.parse(JSON.stringify(Configuration.getChargingStationConnector(connectorID).MeterValues));
+            if (Array.isArray(meterValuesClone)) {
+                sampledValueLcl.sampledValue = meterValuesClone;
+            }
+            else  {
+                sampledValueLcl.sampledValue = [meterValuesClone];
+            }
+            for (let index = 0; index < sampledValueLcl.sampledValue.length; index++) {
+                if (sampledValueLcl.sampledValue[index].measurand && sampledValueLcl.sampledValue[index].measurand === 'SoC') {
+                    sampledValueLcl.sampledValue[index].value = Math.floor(Math.random()*100)+1;
+                    if (sampledValueLcl.sampledValue[index].value > 100)
+                    console.log("Meter type: "+ (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') + " value: " + sampledValueLcl.sampledValue[index].value);
+                } else {
+                    sampledValueLcl.sampledValue[index].value = (Math.floor(Math.random()*self._stationInfo.maxPower-500)+500) * 3600 / interval;
+                    if (sampledValueLcl.sampledValue[index].value > (self._stationInfo.maxPower* 3600 / interval))
+                    console.log("Meter type: "+ (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') + " value: " + sampledValueLcl.sampledValue[index].value + "/" + (this._stationInfo.maxPower* 3600 / interval));
                 }
                 
-                let payload = {
-                    connectorId: connectorID,
-                    meterValue: [sampledValueLcl]
-                }
-                chargingStation.sendMessage(uuid(), payload, Constants.OCPP_JSON_CALL_MESSAGE, "MeterValues");
-            } catch (error) {
-                console.log("Send error:" + error);
             }
+            
+            let payload = {
+                connectorId: connectorID,
+                meterValue: [sampledValueLcl]
+            }
+            await self.sendMessage(uuid(), payload, Constants.OCPP_JSON_CALL_MESSAGE, "MeterValues");
+        } catch (error) {
+            console.log("Send error:" + error);
+        }
+    }
+
+    async startMeterValues(self, connectorID, interval) {
+        if (!this._isStarted && !this._connectors[connectorID].transactionStarted) return;
+        this._connectors[connectorID].transactionInterval = setInterval(async () => {
+            const sendMeterValues = performance.timerify(this.sendMeterValues);
+            _performanceObserver.observe({entryTypes: ['function']});
+            await sendMeterValues(self, connectorID, interval);
         }, interval);
     }
 

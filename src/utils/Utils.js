@@ -103,6 +103,12 @@ class Utils {
 		
 	}
 
+	static logPerformance(entry, className) {
+
+		console.log(`${className}: ${entry.name} ${entry.duration}`);
+	}
+		
+
 }
 
 module.exports=Utils;
