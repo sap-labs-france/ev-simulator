@@ -1,6 +1,6 @@
-const Configuration = require('./utils/Configuration');
-const Constants = require('./utils/Constants');
-const Utils = require('./utils/Utils');
+const Configuration = require('./Configuration');
+const Constants = require('./Constants');
+const Utils = require('./Utils');
 const _statistics = {} 
 class Statistics {
 
@@ -35,7 +35,8 @@ class Statistics {
 
     static async start() {
         if (Configuration.getStatisticsDisplayInterval()) {
-            console.log("Statistics started every " + Configuration.getStatisticsDisplayInterval() + "s");
+            console.log("Statistics displayed every " + Configuration.getStatisticsDisplayInterval() + "s");
+            consol.log("Configuration " + JSON.stringify(Configuration.getConfig(), null, " "));
             setInterval(() => {
                 Statistics.display()
             }, Configuration.getStatisticsDisplayInterval()*1000);

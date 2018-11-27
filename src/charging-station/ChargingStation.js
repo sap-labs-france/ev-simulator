@@ -5,7 +5,7 @@ const Utils = require('../utils/Utils');
 const OCPPError = require('./OcppError');
 const uuid = require('uuid/v4');
 const AutomaticTransactionGenerator = require('./AutomaticTransactionGenerator');
-const Statistics = require('../statistics');
+const Statistics = require('../utils/Statistics');
 
 class ChargingStation {
     constructor(index) {
