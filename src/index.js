@@ -1,6 +1,6 @@
 const Configuration = require('./utils/Configuration');
 const ChargingStation = require('./charging-station/ChargingStation');
-const Statistics = require('./statistics');
+const Statistics = require('./utils/Statistics');
 class Bootstrap{
     static async start() { 
         try {
