@@ -25,6 +25,7 @@ class ChargingStation {
             chargePointModel: this._stationInfo.chargePointModel,
             chargePointVendor: this._stationInfo.chargePointVendor
         }
+        this._configuration = JSON.parse(JSON.stringify(Configuration.getChargingStationConfiguration()));
         let supervisionUrl = JSON.parse(JSON.stringify(Configuration.getSupervisionURL()));
         let indexUrl = 0; 
         if (Array.isArray(supervisionUrl)) {
@@ -347,7 +348,26 @@ class ChargingStation {
     }
 
     async handleGetConfiguration(commandPayload) {
-        return Configuration.getChargingStationConfiguration();
+//        console.log("GET CONFIGURATION " + JSON.stringify(this._configuration));
+        return this._configuration;
+    }
+
+    async handleChangeConfiguration(commandPayload) {
+        const keyToChange = this._configuration.configurationKey.find((element) => {
+            return element.key === commandPayload.key;
+        });
+        if (keyToChange) {
+//            console.log('CHANGE CONFIGURATION ' + commandPayload.key + ' to ' + commandPayload.value);
+            keyToChange.value = commandPayload.value;
+            return {
+                status: "Accepted"
+            }
+        } else {
+//            console.log('CHANGE CONFIGURATION ERROR ' + commandPayload.key + ' to ' + commandPayload.value);
+            return {
+                status: "Rejected"
+            }
+        }
     }
 
     async handleRemoteStartTransaction(commandPayload) {
