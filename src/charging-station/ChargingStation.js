@@ -20,6 +20,7 @@ class ChargingStation {
         this._isSocketRestart = false;
         this._lastHeartBeat = null;
         this._stationInfo = this.buildChargingStation(index);
+        this._index = index;
         this._messageQueue = [];
         this._bootNotificationMessage = {
             chargePointModel: this._stationInfo.chargePointModel,
@@ -261,8 +262,15 @@ class ChargingStation {
                     this._connectors[lastConnector] = connectorsConfig[lastConnector]; 
                 }
             }
+            let maxConnectors = 0;
+            if (Array.isArray(this._stationInfo.numberOfConnectors)) {
+                // generate some connectors
+                maxConnectors = this._stationInfo.numberOfConnectors[( this._index - 1 ) % this._stationInfo.numberOfConnectors.length];
+            } else {
+                maxConnectors = this._stationInfo.numberOfConnectors;
+            }
             // generate all connectors
-            for (let index = 1; index <= this._stationInfo.numberOfConnectors; index++) {
+            for (let index = 1; index <= maxConnectors; index++) {
                 const randConnectorID = (this._stationInfo.randomConnectors ? Utils.getRandomInt(lastConnector, 1) : index);
                 this._connectors[index] = connectorsConfig[randConnectorID];
             }
