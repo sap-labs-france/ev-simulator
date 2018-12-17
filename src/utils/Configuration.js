@@ -12,6 +12,11 @@ class Configuration {
 		return Configuration.getConfig().statisticsDisplayInterval;
 	}
 
+	static getChargingStationTemplateURLs() {
+		// Read conf
+		return Configuration.getConfig().stationTemplateURLs;
+	}
+
 	static getChargingStationTemplate() {
 		// Read conf
 		return Configuration.getConfig().stationTemplate;

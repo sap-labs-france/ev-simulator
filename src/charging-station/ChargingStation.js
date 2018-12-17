@@ -15,20 +15,20 @@ const _performanceObserver  = new PerformanceObserver((list) => {
         _performanceObserver.disconnect();
   });
 class ChargingStation {
-    constructor(index) {
+    constructor(index, stationTemplate) {
         this._requests = {};
         this._isStarted = false;
         this._isSocketRestart = false;
         this._lastHeartBeat = null;
-        this._stationInfo = this.buildChargingStation(index);
+        this._stationInfo = this.buildChargingStation(index, stationTemplate);
         this._index = index;
         this._messageQueue = [];
         this._bootNotificationMessage = {
             chargePointModel: this._stationInfo.chargePointModel,
             chargePointVendor: this._stationInfo.chargePointVendor
         }
-        this._configuration = JSON.parse(JSON.stringify(Configuration.getChargingStationConfiguration()));
-        this._authorizationFile = Configuration.getChargingStationAuthorizationFile();
+        this._configuration = (stationTemplate.Configuration ? stationTemplate.Configuration : {});
+        this._authorizationFile = (stationTemplate.authorizationFile ? stationTemplate.authorizationFile : "");
         let supervisionUrl = JSON.parse(JSON.stringify(Configuration.getSupervisionURL()));
         let indexUrl = 0; 
         if (Array.isArray(supervisionUrl)) {
@@ -45,9 +45,13 @@ class ChargingStation {
         console.log(this._stationInfo.name + " will communicate with " + this._supervisionUrl + " index " + indexUrl);
     }
 
-    buildChargingStation(index) {
-        let templateStation = JSON.parse(JSON.stringify(Configuration.getChargingStationTemplate()));
-        templateStation.maxPower = templateStation.power[Math.floor(Math.random() * templateStation.power.length)];
+    buildChargingStation(index, templateStation) {
+//        let templateStation = JSON.parse(JSON.stringify(Configuration.getChargingStationTemplate()));
+        if (Array.isArray(templateStation.power)) {
+            templateStation.maxPower = templateStation.power[Math.floor(Math.random() * templateStation.power.length)];
+        } else {
+            templateStation.maxPower = templateStation.power;
+        }
         templateStation.name = templateStation.baseName + '-' + ("000000000" + index).substr(("000000000" + index).length - 4);
         return templateStation;
     }
@@ -62,9 +66,10 @@ class ChargingStation {
                 this._authorizedKeys = JSON.parse(fs.readFileSync(fileDescriptor, 'utf8'));
                 fs.closeSync(fileDescriptor);
                 // get remote authorization logic
-                this._authorizeRemoteTxRequests = Configuration.getChargingStationConfiguration().configurationKey.find(configElement => {
-                    configElement.key === "AuthorizeRemoteTxRequests"; 
-                }).value;
+                this._authorizeRemoteTxRequests = this._configuration.configurationKey.find(configElement => {
+                    return configElement.key === "AuthorizeRemoteTxRequests"; 
+                });
+                this._authorizeRemoteTxRequests = (this._authorizeRemoteTxRequests ? this._authorizeRemoteTxRequests.value : false);
                 //  Monitor authorization file
                 fs.watchFile(this._authorizationFile, (current, previous) => {
                     try {
@@ -281,7 +286,7 @@ class ChargingStation {
         this.startHeartbeat(this, this._heartbeatInterval);
         if (!this._connectors) { //build connectors
             this._connectors = {};
-            const connectorsConfig = JSON.parse(JSON.stringify(Configuration.getChargingStationConnectors()));
+            const connectorsConfig = JSON.parse(JSON.stringify(this._stationInfo.Connectors));
             //determine number of customized connectors
             let lastConnector;
             for (lastConnector in connectorsConfig) {
@@ -315,8 +320,8 @@ class ChargingStation {
             }
         };
 
-        if (Configuration.getAutomaticTransactionConfiguration().enable && !this._automaticTransactionGeneration) {
-            this._automaticTransactionGeneration = new AutomaticTransactionGenerator(this);
+        if (this._stationInfo.AutomaticTransactionGenerator.enable && !this._automaticTransactionGeneration) {
+            this._automaticTransactionGeneration = new AutomaticTransactionGenerator(this, this._stationInfo.AutomaticTransactionGenerator);
             this._automaticTransactionGeneration.start();
         }
     }
@@ -333,10 +338,13 @@ class ChargingStation {
                     this._connectors[connector].transactionId = payload.transactionId;
                     console.log("Transaction " + this._connectors[connector].transactionId + " STARTED on " + this._stationInfo.name + "#" + requestPayload.connectorId);
                     this.sendStatusNotification(requestPayload.connectorId, "Charging");
-                    this.startMeterValues(this, requestPayload.connectorId, Configuration.getMeterValueInterval());
+                    const configuredMeterInterval = this._configuration.configurationKey.find((value) => {
+                        return value.key === "meterValueInterval";
+                    });
+                    this.startMeterValues(this, requestPayload.connectorId,  
+                        (configuredMeterInterval ? configuredMeterInterval.value * 1000 : 60000 ));
                 }
             };
-            
         } else {
             console.log("Start transaction REJECTED " + payload.idTagInfo.status);
             this.sendStatusNotification(requestPayload.connectorId, "Available");
@@ -433,7 +441,7 @@ class ChargingStation {
     async sendStartTransaction(connectorID, idTag) {
         try {
             let payload = { connectorId: connectorID, idTag: idTag, meterStart: 0, timestamp: new Date().toISOString() };
-            await this.sendMessage(uuid(), payload, Constants.OCPP_JSON_CALL_MESSAGE, "StartTransaction");
+            return await this.sendMessage(uuid(), payload, Constants.OCPP_JSON_CALL_MESSAGE, "StartTransaction");
         } catch (error) {
             throw error;
         }
@@ -458,7 +466,7 @@ class ChargingStation {
             let sampledValueLcl = {
                 timestamp: new Date().toISOString(),
             };
-            let meterValuesClone = JSON.parse(JSON.stringify(Configuration.getChargingStationConnector(connectorID).MeterValues));
+            let meterValuesClone = JSON.parse(JSON.stringify(self.getConnector(connectorID).MeterValues));
             if (Array.isArray(meterValuesClone)) {
                 sampledValueLcl.sampledValue = meterValuesClone;
             }
@@ -521,6 +529,10 @@ class ChargingStation {
         const index = Math.round(Math.floor(Math.random()*this._authorizedKeys.length-1));
         return this._authorizedKeys[index];
     }
+
+    getConnector(number) {
+		return this._stationInfo.Connectors[number];
+	}
 }
 
 module.exports = ChargingStation;

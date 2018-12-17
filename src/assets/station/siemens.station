@@ -1,0 +1,43 @@
+{
+    "authorizationFile": "./ev-simulator/src/assets/templateAuthorization.auth",
+    "baseName": "CS-SIEMENS",
+    "chargePointModel": "SiemensXX213",
+    "chargePointVendor": "SIEMENS",
+    "power": 22000,
+    "powerUnit": "W",
+    "numberOfConnectors": 2,
+    "randomConnectors": false,
+    "Configuration": { "configurationKey": [
+            { "key": "NumberOfConnectors", "readonly": true, "value": 2},
+            { "key": "param1", "readonly": false, "value": "test"},
+            { "key": "meterValueInterval", "readonly": false, "value": 30},
+            { "key": "AuthorizeRemoteTxRequests", "readonly": false, "value": false}
+        ]
+    },
+    "AutomaticTransactionGenerator": {
+        "enable": true,
+        "minDuration": 60,
+        "maxDuration": 80,
+        "minDelayBetweenTwoTransaction": 15,
+        "maxDelayBetweenTwoTransaction": 30,
+        "probabilityOfStart": 1,
+        "stopAutomaticTransactionGeneratorAfterHours": 0.3
+    },
+    "Connectors": {
+        "1": {
+            "MeterValues": [ {
+                "unit": "Wh",
+                "context": "Sample.Periodic"
+            }
+            ]
+        },
+        "2": {
+            "MeterValues": [{
+                "context": "Sample.Periodic",
+                "format": "Raw",
+                "measurand": "Energey.Active.Import.Register",
+                "unit": "Wh"
+            }]
+        }
+    }
+}
