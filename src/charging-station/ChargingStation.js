@@ -513,7 +513,7 @@ class ChargingStation {
         };
     }
 
-    isAuthorizationrequested() {
+    isAuthorizationRequested() {
         return this._authorizedKeys && this._authorizedKeys.length > 0;
     }
     
