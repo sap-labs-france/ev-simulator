@@ -44,6 +44,11 @@ class Configuration {
 	static getChargingStationConfiguration() {
 		return ( Configuration.getChargingStationTemplate().hasOwnProperty('Configuration') ? Configuration.getChargingStationTemplate().Configuration : {} );
 	}
+
+	static getChargingStationAuthorizationFile() {
+		return ( Configuration.getChargingStationTemplate().hasOwnProperty('authorizationFile') ? Configuration.getChargingStationTemplate().authorizationFile : "" );
+	}
+
 	static getChargingStationConnectors() {
 		return Configuration.getChargingStationTemplate().Connectors;
 	}

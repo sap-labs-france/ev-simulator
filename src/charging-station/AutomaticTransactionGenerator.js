@@ -84,7 +84,14 @@ class AutomaticTransactionGenerator {
     }
 
     async startTransaction(connectorId, self) {
-        await self._chargingStation.sendStartTransaction(connectorId);
+        if (self._chargingStation.isAuthorizationrequested()) {
+            const tagId = self._chargingStation.getRandomTagId();
+            console.log("ATG Start transaction for tagID " + tagId);
+            await self._chargingStation.sendStartTransaction(connectorId, tagId);
+        } else {
+            await self._chargingStation.sendStartTransaction(connectorId);
+        }
+        
     }
 
     async stopTransaction(connectorId, self) {

@@ -6,6 +6,7 @@ const OCPPError = require('./OcppError');
 const uuid = require('uuid/v4');
 const AutomaticTransactionGenerator = require('./AutomaticTransactionGenerator');
 const Statistics = require('../utils/Statistics');
+const fs = require('fs');
 const {performance, PerformanceObserver } = require('perf_hooks');
 
 const _performanceObserver  = new PerformanceObserver((list) => {
@@ -27,6 +28,7 @@ class ChargingStation {
             chargePointVendor: this._stationInfo.chargePointVendor
         }
         this._configuration = JSON.parse(JSON.stringify(Configuration.getChargingStationConfiguration()));
+        this._authorizationFile = Configuration.getChargingStationAuthorizationFile();
         let supervisionUrl = JSON.parse(JSON.stringify(Configuration.getSupervisionURL()));
         let indexUrl = 0; 
         if (Array.isArray(supervisionUrl)) {
@@ -53,7 +55,32 @@ class ChargingStation {
     async start() {
         this._url = this._supervisionUrl + "/" + this._stationInfo.name;
         this._wsConnection = new WebSocket(this._url, "ocpp1.6");
-
+        if (this._authorizationFile !== "") {
+            try {
+                //load file
+                const fileDescriptor = fs.openSync(this._authorizationFile, 'r');
+                this._authorizedKeys = JSON.parse(fs.readFileSync(fileDescriptor, 'utf8'));
+                fs.closeSync(fileDescriptor);
+                // get remote authorization logic
+                this._authorizeRemoteTxRequests = Configuration.getChargingStationConfiguration().configurationKey.find(configElement => {
+                    configElement.key === "AuthorizeRemoteTxRequests"; 
+                }).value;
+                //  Monitor authorization file
+                fs.watchFile(this._authorizationFile, (current, previous) => {
+                    try {
+                        //reload file
+                        const fileDescriptor = fs.openSync(this._authorizationFile, 'r');
+                        this._authorizedKeys = JSON.parse(fs.readFileSync(fileDescriptor, 'utf8'));
+                        fs.closeSync(fileDescriptor);
+                    } catch (error) {
+                        console.log("Authorization file error" + error);
+                    }
+                })    
+            } catch (error) {
+                console.log("Authorization file error" + error);
+            }
+            
+        }
         // Handle incoming messages
         this._wsConnection.on('message', this.onMessage.bind(this));
         // Handle Error on Socket
@@ -380,12 +407,27 @@ class ChargingStation {
 
     async handleRemoteStartTransaction(commandPayload) {
         let transactionConnectorID = ( commandPayload.hasOwnProperty("connectorId") ? commandPayload.connectorId : "1" );
-
-        setTimeout( () => this.sendStartTransaction(transactionConnectorID, commandPayload.idTag), 500 );
-        
-        return {
-            status: "Accepted"
-        };
+        if (this._authorizedKeys && this._authorizedKeys.length > 0 && this._authorizeRemoteTxRequests) {
+            // check if authorized
+            if (this._authorizedKeys.find((value) => value === commandPayload.idTag)) {
+                // Authorization successful start transaction
+                setTimeout( () => this.sendStartTransaction(transactionConnectorID, commandPayload.idTag), 500 );
+                return {
+                    status: "Accepted"
+                };
+            } else {
+                // Start authorization checks
+                return {
+                    status: "Rejected"
+                };
+            }
+        } else {
+            // no local authorization check required => start transaction
+            setTimeout( () => this.sendStartTransaction(transactionConnectorID, commandPayload.idTag), 500 );
+            return {
+                status: "Accepted"
+            };
+        }  
     }
 
     async sendStartTransaction(connectorID, idTag) {
@@ -427,11 +469,16 @@ class ChargingStation {
                 if (sampledValueLcl.sampledValue[index].measurand && sampledValueLcl.sampledValue[index].measurand === 'SoC') {
                     sampledValueLcl.sampledValue[index].value = Math.floor(Math.random()*100)+1;
                     if (sampledValueLcl.sampledValue[index].value > 100)
-                    console.log("Meter type: "+ (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') + " value: " + sampledValueLcl.sampledValue[index].value);
+                    console.log("Meter type: "+ 
+                                (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') +
+                                 " value: " + sampledValueLcl.sampledValue[index].value);
                 } else {
-                    sampledValueLcl.sampledValue[index].value = (Math.floor(Math.random()*self._stationInfo.maxPower-500)+500) * 3600 / interval;
-                    if (sampledValueLcl.sampledValue[index].value > (self._stationInfo.maxPower* 3600 / interval))
-                    console.log("Meter type: "+ (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') + " value: " + sampledValueLcl.sampledValue[index].value + "/" + (this._stationInfo.maxPower* 3600 / interval));
+
+                    sampledValueLcl.sampledValue[index].value = Math.round((Math.floor(Math.random()*self._stationInfo.maxPower-500)+500) * 3600 / interval);
+                    if (sampledValueLcl.sampledValue[index].value > (self._stationInfo.maxPower* 3600 / interval) || sampledValueLcl.sampledValue[index].value < 500)
+                    console.log("Meter type: " + 
+                                    (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') +
+                                     " value: " + sampledValueLcl.sampledValue[index].value + "/" + (self._stationInfo.maxPower * 3600 / interval));
                 }
                 
             }
@@ -464,6 +511,15 @@ class ChargingStation {
         return {
             status: "Accepted"
         };
+    }
+
+    isAuthorizationrequested() {
+        return this._authorizedKeys && this._authorizedKeys.length > 0;
+    }
+    
+    getRandomTagId() {
+        const index = Math.round(Math.floor(Math.random()*this._authorizedKeys.length-1));
+        return this._authorizedKeys[index];
     }
 }
 
