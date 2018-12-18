@@ -52,7 +52,7 @@ class ChargingStation {
         } else {
             templateStation.maxPower = templateStation.power;
         }
-        templateStation.name = templateStation.baseName + '-' + ("000000000" + index).substr(("000000000" + index).length - 4);
+        templateStation.name = (templateStation.fixedName ? templateStation.baseName : templateStation.baseName + '-' + ("000000000" + index).substr(("000000000" + index).length - 4));
         return templateStation;
     }
 
@@ -346,7 +346,7 @@ class ChargingStation {
                 }
             };
         } else {
-            console.log("Start transaction REJECTED " + payload.idTagInfo.status);
+            console.log("Start transaction REJECTED " + payload.idTagInfo.status + " idTag " + requestPayload.idTag);
             this.sendStatusNotification(requestPayload.connectorId, "Available");
         }
         return;

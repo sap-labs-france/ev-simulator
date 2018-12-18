@@ -1,5 +1,5 @@
 {
-    "authorizationFile": "./ev-simulator/src/assets/templateAuthorization.auth",
+    "authorizationFile": "./assets/templateAuthorization.auth",
     "baseName": "CS-ABB",
     "chargePointModel": "ABB 5678",
     "chargePointVendor": "ABB",
@@ -15,7 +15,7 @@
         ]
     },
     "AutomaticTransactionGenerator": {
-        "enable": true,
+        "enable": false,
         "minDuration": 60,
         "maxDuration": 80,
         "minDelayBetweenTwoTransaction": 15,
