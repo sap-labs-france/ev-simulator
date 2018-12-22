@@ -181,7 +181,7 @@ class ChargingStation {
             // Log
             console.log(error);
             // Send error
-            //            await this.sendError(messageId, error);
+            await this.sendError(messageId, error);
         }
     }
 
@@ -384,7 +384,7 @@ class ChargingStation {
             result = await this["handle" + commandName](commandPayload);
         } else {
             // Throw Exception
-            throw new Error(`${commandName} is not implemented`);
+            throw new Error(`${commandName} is not implemented ${JSON.stringify(commandPayload, null, " ")}`);
         }
         // Send Response
         await this.sendMessage(messageId, result, Constants.OCPP_JSON_CALL_RESULT_MESSAGE);
