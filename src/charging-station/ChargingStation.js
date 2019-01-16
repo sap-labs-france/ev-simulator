@@ -336,6 +336,8 @@ class ChargingStation {
                 if (connector == requestPayload.connectorId) {
                     this._connectors[connector].transactionStarted = true;
                     this._connectors[connector].transactionId = payload.transactionId;
+                    this._connectors[connector].lastConsumptionValue = 0;
+                    this._connectors[connector].lastSoC = 0;
                     console.log("Transaction " + this._connectors[connector].transactionId + " STARTED on " + this._stationInfo.name + "#" + requestPayload.connectorId);
                     this.sendStatusNotification(requestPayload.connectorId, "Charging");
                     const configuredMeterInterval = this._configuration.configurationKey.find((value) => {
@@ -454,6 +456,7 @@ class ChargingStation {
             console.log("Transaction " + this._connectors[connectorID].transactionId + " STOPPED on " + this._stationInfo.name + "#" + connectorID);
             this._connectors[connectorID].transactionStarted = false;
             this._connectors[connectorID].transactionId = null;
+            this._connectors[connectorID].lastConsumptionValue = -1;
             clearInterval(this._connectors[connectorID].transactionInterval);
             this.sendStatusNotification(connectorID, "Available");
         } catch (error) {
@@ -481,8 +484,18 @@ class ChargingStation {
                                 (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') +
                                  " value: " + sampledValueLcl.sampledValue[index].value);
                 } else {
-
-                    sampledValueLcl.sampledValue[index].value = Math.round((Math.floor(Math.random()*self._stationInfo.maxPower-500)+500) * 3600 / interval);
+                    //persist previous value in connector
+                    const connector = self._connectors[connectorID];
+                    let consumption;
+                    consumption = Utils.getRandomInt(self._stationInfo.maxPower/3600000*interval, 3);
+                    if (connector && connector.lastConsumptionValue >= 0) {
+                        connector.lastConsumptionValue += consumption;
+                    } else {
+                        connector.lastConsumptionValue = 0;
+                    }
+                    consumption = Math.round(connector.lastConsumptionValue * 3600 / interval);
+                    console.log("ConnectorID " + connectorID + " transaction " + connector.transactionId + " value " + connector.lastConsumptionValue);
+                    sampledValueLcl.sampledValue[index].value = connector.lastConsumptionValue;
                     if (sampledValueLcl.sampledValue[index].value > (self._stationInfo.maxPower* 3600 / interval) || sampledValueLcl.sampledValue[index].value < 500)
                     console.log("Meter type: " + 
                                     (sampledValueLcl.sampledValue[index].measurand ? sampledValueLcl.sampledValue[index].measurand : 'default') +
@@ -493,6 +506,7 @@ class ChargingStation {
             
             let payload = {
                 connectorId: connectorID,
+                transactionId: self._connectors[connectorID].transactionId,
                 meterValue: [sampledValueLcl]
             }
             await self.sendMessage(uuid(), payload, Constants.OCPP_JSON_CALL_MESSAGE, "MeterValues");

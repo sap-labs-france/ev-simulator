@@ -26,6 +26,7 @@
     },
     "Connectors": {
         "1": {
+            "bootStatus": "Unavailable",
             "MeterValues": [ {
                 "unit": "Wh",
                 "context": "Sample.Periodic"
