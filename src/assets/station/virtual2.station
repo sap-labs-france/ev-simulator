@@ -1,14 +1,14 @@
 {
     "authorizationFile": "./assets/templateAuthorization.auth",
-    "baseName": "CS-ABB",
-    "chargePointModel": "ABB 5678",
-    "chargePointVendor": "ABB",
+    "baseName": "CS-BASIC",
+    "chargePointModel": "Simu simple",
+    "chargePointVendor": "Ovomaltin",
     "power": 50000,
     "powerUnit": "W",
-    "numberOfConnectors": 2,
+    "numberOfConnectors": 3,
     "randomConnectors": false,
     "Configuration": { "configurationKey": [
-            { "key": "NumberOfConnectors", "readonly": true, "value": 2},
+            { "key": "NumberOfConnectors", "readonly": true, "value": 3},
             { "key": "param1", "readonly": false, "value": "test"},
             { "key": "meterValueInterval", "readonly": false, "value": 30},
             { "key": "AuthorizeRemoteTxRequests", "readonly": false, "value": false}
@@ -25,9 +25,23 @@
     },
     "Connectors": {
         "0": {
-
         },
         "1": {
+            "bootStatus": "Available",
+            "MeterValues": [ {
+                    "unit": "Percent",
+                    "context": "Sample.Periodic",
+                    "measurand": "SoC",
+                    "location": "EV"
+                },
+                {
+                "unit": "Wh",
+                "context": "Sample.Periodic"
+                }
+            ]
+        },
+        "2": {
+            "bootStatus": "Preparing",
             "MeterValues": [ {
                     "unit": "Percent",
                     "context": "Sample.Periodic",
@@ -40,7 +54,8 @@
             }
             ]
         },
-        "2": {
+        "3": {
+            "bootStatus": "Faulted",
             "MeterValues": [ {
                     "unit": "Percent",
                     "context": "Sample.Periodic",
@@ -53,5 +68,7 @@
             }
             ]
         }
+            
+        
     }
 }

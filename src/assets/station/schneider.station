@@ -32,12 +32,11 @@
             ]
         },
         "2": {
-            "MeterValues": [{
-                "context": "Sample.Periodic",
-                "format": "Raw",
-                "measurand": "Energey.Active.Import.Register",
-                "unit": "Wh"
-            }]
+            "MeterValues": [ {
+                "unit": "Wh",
+                "context": "Sample.Periodic"
+            }
+            ]
         }
     }
 }
