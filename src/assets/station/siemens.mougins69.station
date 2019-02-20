@@ -1,5 +1,5 @@
 {
-    "authorizationFile": "./assets/templateAuthorization.auth",
+    "authorizationFile": "./src/assets/templateAuthorization.auth",
     "baseName": "SAP-Mougins-69",
     "fixedName": true,
     "chargePointModel": "SiemensXX213",

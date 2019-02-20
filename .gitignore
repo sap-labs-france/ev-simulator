@@ -6,6 +6,7 @@ src/config.json
 yarn.lock
 package-lock.json
 manifest.yml
+config/default.json
 
 # Logs
 logs
@@ -39,9 +40,6 @@ dist
 node_modules
 jspm_packages
 
-# conf files
-config/default.json
-
 # Optional npm cache directory
 .npm
 
@@ -51,11 +49,22 @@ config/default.json
 # temporary file
 tmp
 
-# vscode
-.vscode
-
-# intellij
+# Intellij
 /.idea
 /outputs
 /docker/mongo
 build/config.gypi
+
+# VisualStudioCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Vim
+# Persistent undo
+[._]*.un~
+# Temporary
+.netrwhist
+*~

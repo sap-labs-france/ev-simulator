@@ -1,5 +1,5 @@
 {
-    "authorizationFile": "./assets/templateAuthorization.auth",
+    "authorizationFile": "./src/assets/templateAuthorization.auth",
     "baseName": "CS-SCHNEIDER",
     "chargePointModel": "SCHNEIDERXX213",
     "chargePointVendor": "SCHNEIDER",

@@ -1,5 +1,5 @@
 {
-    "authorizationFile": "./assets/templateAuthorization.auth",
+    "authorizationFile": "./src/assets/templateAuthorization.auth",
     "baseName": "CS-keba",
     "chargePointModel": "keba 4321",
     "chargePointVendor": "keba",
