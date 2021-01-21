@@ -1,6 +1,7 @@
 {
   "authorizationFile": "./src/assets/authorization-tags.json",
   "baseName": "CS-BASIC",
+  "nameSuffix": "",
   "chargePointModel": "Simulator simple",
   "chargePointVendor": "Ovomaltin",
   "power": 75000,

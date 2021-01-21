@@ -1,6 +1,7 @@
 {
   "authorizationFile": "./src/assets/authorization-tags.json",
   "baseName": "CS-SIMU",
+  "nameSuffix": "",
   "chargePointModel": "Simulator connectors",
   "chargePointVendor": "Ovomaltin",
   "power": 50000,

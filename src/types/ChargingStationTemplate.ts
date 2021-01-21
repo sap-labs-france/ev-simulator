@@ -32,6 +32,7 @@ export default interface ChargingStationTemplate {
   supervisionURL?: string;
   authorizationFile?: string;
   baseName: string;
+  nameSuffix: string;
   fixedName?: string;
   chargePointModel: string;
   chargePointVendor: string;

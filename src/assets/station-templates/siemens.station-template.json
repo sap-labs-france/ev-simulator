@@ -1,6 +1,7 @@
 {
   "authorizationFile": "./src/assets/authorization-tags.json",
   "baseName": "CS-SIEMENS",
+  "NameSuffix": "",
   "fixedName": true,
   "chargePointModel": "SIEMENSXX213",
   "chargePointVendor": "SIEMENS",

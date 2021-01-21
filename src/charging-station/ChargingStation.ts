@@ -75,9 +75,7 @@ export default class ChargingStation {
     let instanceIndex = process.env.CF_INSTANCE_INDEX ? process.env.CF_INSTANCE_INDEX : 0;
     instanceIndex = instanceIndex > 0 ? instanceIndex : '';
 
-    const idSuffix = Configuration.getChargingStationIdSuffix();
-
-    return stationTemplate.fixedName ? stationTemplate.baseName : stationTemplate.baseName + '-' + instanceIndex + ('000000000' + this._index.toString()).substr(('000000000' + this._index.toString()).length - 4) + idSuffix;
+    return stationTemplate.fixedName ? stationTemplate.baseName : stationTemplate.baseName + '-' + instanceIndex + ('000000000' + this._index.toString()).substr(('000000000' + this._index.toString()).length - 4) + stationTemplate.nameSuffix;
   }
 
   _buildStationInfo(): ChargingStationInfo {

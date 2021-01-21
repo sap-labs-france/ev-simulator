@@ -1,6 +1,7 @@
 {
   "authorizationFile": "./src/assets/authorization-tags.json",
   "baseName": "CS-SCHNEIDER",
+  "nameSuffix": "",
   "chargePointModel": "MONOBLOCK",
   "chargePointVendor": "Schneider Electric",
   "chargeBoxSerialNumberPrefix": "EV.2S22P04",
