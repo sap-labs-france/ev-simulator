@@ -9,7 +9,7 @@ import typescript from 'rollup-plugin-typescript2';
 const isDevelopmentBuild = process.env.BUILD === 'development';
 
 export default {
-  input: ['src/start.ts', 'src/charging-station/StationWorker.ts'],
+  input: ['src/start.ts', 'src/charging-station/ChargingStationWorker.ts'],
   output:
   {
     dir: 'dist',
@@ -20,7 +20,7 @@ export default {
     preserveModulesRoot: 'src',
     ...!isDevelopmentBuild && { plugins: [terser({ numWorkers: 2 })] }
   },
-  external: ['crypto', 'perf_hooks', 'fs', 'path', 'poolifier', 'uuid', 'ws', 'winston-daily-rotate-file', 'winston/lib/winston/transports', 'winston', 'worker_threads'],
+  external: ['basic-ftp', 'chalk', 'crypto', 'fs', '@mikro-orm/core', 'mongodb', 'path', 'perf_hooks', 'poolifier', 'reflect-metadata', 'tar', 'url', 'uuid', 'ws', 'winston-daily-rotate-file', 'winston/lib/winston/transports', 'winston', 'worker_threads'],
   plugins: [
     json(),
     typescript({

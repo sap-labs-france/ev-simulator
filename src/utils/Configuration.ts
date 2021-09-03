@@ -1,8 +1,10 @@
-import ConfigurationData, { StationTemplateURL } from '../types/ConfigurationData';
+import ConfigurationData, { StationTemplateURL, StorageConfiguration } from '../types/ConfigurationData';
 
 import Constants from './Constants';
+import { StorageType } from '../types/Storage';
 import type { WorkerChoiceStrategy } from 'poolifier';
 import { WorkerProcessType } from '../types/Worker';
+import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 
@@ -16,15 +18,38 @@ export default class Configuration {
     Configuration.configurationChangeCallback = cb;
   }
 
-  static getStatisticsDisplayInterval(): number {
+  static getLogStatisticsInterval(): number {
+    Configuration.warnDeprecatedConfigurationKey('statisticsDisplayInterval', null, 'Use \'logStatisticsInterval\' instead');
     // Read conf
-    return Configuration.objectHasOwnProperty(Configuration.getConfig(), 'statisticsDisplayInterval') ? Configuration.getConfig().statisticsDisplayInterval : 60;
+    return Configuration.objectHasOwnProperty(Configuration.getConfig(), 'logStatisticsInterval') ? Configuration.getConfig().logStatisticsInterval : 60;
+  }
+
+  static getPerformanceStorage(): StorageConfiguration {
+    let storageConfiguration: StorageConfiguration;
+    if (Configuration.objectHasOwnProperty(Configuration.getConfig(), 'performanceStorage')) {
+      storageConfiguration =
+      {
+        ...Configuration.objectHasOwnProperty(Configuration.getConfig().performanceStorage, 'enabled') ? { enabled: Configuration.getConfig().performanceStorage.enabled } : { enabled: false },
+        ...Configuration.objectHasOwnProperty(Configuration.getConfig().performanceStorage, 'type') ? { type: Configuration.getConfig().performanceStorage.type } : { type: StorageType.JSON_FILE },
+        ...Configuration.objectHasOwnProperty(Configuration.getConfig().performanceStorage, 'URI')
+          ? { URI: Configuration.getConfig().performanceStorage.URI }
+          : { URI: this.getDefaultPerformanceStorageURI(Configuration.getConfig()?.performanceStorage?.type ?? StorageType.JSON_FILE) }
+      };
+    } else {
+      storageConfiguration =
+      {
+        enabled: false,
+        type: StorageType.JSON_FILE,
+        URI: this.getDefaultPerformanceStorageURI(StorageType.JSON_FILE)
+      };
+    }
+    return storageConfiguration;
   }
 
   static getAutoReconnectMaxRetries(): number {
-    Configuration.deprecateConfigurationKey('autoReconnectTimeout', 'Use \'ConnectionTimeOut\' OCPP parameter in charging station template instead');
-    Configuration.deprecateConfigurationKey('connectionTimeout', 'Use \'ConnectionTimeOut\' OCPP parameter in charging station template instead');
-    Configuration.deprecateConfigurationKey('autoReconnectMaxRetries', 'Use it in charging station template instead');
+    Configuration.warnDeprecatedConfigurationKey('autoReconnectTimeout', null, 'Use \'ConnectionTimeOut\' OCPP parameter in charging station template instead');
+    Configuration.warnDeprecatedConfigurationKey('connectionTimeout', null, 'Use \'ConnectionTimeOut\' OCPP parameter in charging station template instead');
+    Configuration.warnDeprecatedConfigurationKey('autoReconnectMaxRetries', null, 'Use it in charging station template instead');
     // Read conf
     if (Configuration.objectHasOwnProperty(Configuration.getConfig(), 'autoReconnectMaxRetries')) {
       return Configuration.getConfig().autoReconnectMaxRetries;
@@ -34,7 +59,7 @@ export default class Configuration {
   static getStationTemplateURLs(): StationTemplateURL[] {
     Configuration.getConfig().stationTemplateURLs.forEach((stationURL: StationTemplateURL) => {
       if (!Configuration.isUndefined(stationURL['numberOfStation'])) {
-        console.error(`${Configuration.logPrefix()} Deprecated configuration key 'numberOfStation' usage for template file '${stationURL.file}' in 'stationTemplateURLs'. Use 'numberOfStations' instead`);
+        console.error(chalk`{green ${Configuration.logPrefix()}} {red Deprecated configuration key 'numberOfStation' usage for template file '${stationURL.file}' in 'stationTemplateURLs'. Use 'numberOfStations' instead}`);
       }
     });
     // Read conf
@@ -42,7 +67,7 @@ export default class Configuration {
   }
 
   static getWorkerProcess(): WorkerProcessType {
-    Configuration.deprecateConfigurationKey('useWorkerPool;', 'Use \'workerProcess\' to define the type of worker process to use instead');
+    Configuration.warnDeprecatedConfigurationKey('useWorkerPool;', null, 'Use \'workerProcess\' to define the type of worker process to use instead');
     return Configuration.objectHasOwnProperty(Configuration.getConfig(), 'workerProcess') ? Configuration.getConfig().workerProcess : WorkerProcessType.WORKER_SET;
   }
 
@@ -55,7 +80,7 @@ export default class Configuration {
   }
 
   static getWorkerPoolMaxSize(): number {
-    Configuration.deprecateConfigurationKey('workerPoolSize;', 'Use \'workerPoolMaxSize\' instead');
+    Configuration.warnDeprecatedConfigurationKey('workerPoolSize;', null, 'Use \'workerPoolMaxSize\' instead');
     return Configuration.objectHasOwnProperty(Configuration.getConfig(), 'workerPoolMaxSize') ? Configuration.getConfig().workerPoolMaxSize : Constants.DEFAULT_WORKER_POOL_MAX_SIZE;
   }
 
@@ -68,7 +93,7 @@ export default class Configuration {
   }
 
   static getLogConsole(): boolean {
-    Configuration.deprecateConfigurationKey('consoleLog', 'Use \'logConsole\' instead');
+    Configuration.warnDeprecatedConfigurationKey('consoleLog', null, 'Use \'logConsole\' instead');
     return Configuration.objectHasOwnProperty(Configuration.getConfig(), 'logConsole') ? Configuration.getConfig().logConsole : false;
   }
 
@@ -93,7 +118,7 @@ export default class Configuration {
   }
 
   static getLogErrorFile(): string {
-    Configuration.deprecateConfigurationKey('errorFile', 'Use \'logErrorFile\' instead');
+    Configuration.warnDeprecatedConfigurationKey('errorFile', null, 'Use \'logErrorFile\' instead');
     return Configuration.objectHasOwnProperty(Configuration.getConfig(), 'logErrorFile') ? Configuration.getConfig().logErrorFile : 'error.log';
   }
 
@@ -103,7 +128,7 @@ export default class Configuration {
   }
 
   static getDistributeStationsToTenantsEqually(): boolean {
-    Configuration.deprecateConfigurationKey('distributeStationToTenantEqually', 'Use \'distributeStationsToTenantsEqually\' instead');
+    Configuration.warnDeprecatedConfigurationKey('distributeStationToTenantEqually', null, 'Use \'distributeStationsToTenantsEqually\' instead');
     return Configuration.objectHasOwnProperty(Configuration.getConfig(), 'distributeStationsToTenantsEqually') ? Configuration.getConfig().distributeStationsToTenantsEqually : true;
   }
 
@@ -111,9 +136,12 @@ export default class Configuration {
     return new Date().toLocaleString() + ' Simulator configuration |';
   }
 
-  private static deprecateConfigurationKey(key: string, logMsgToAppend = '') {
-    if (!Configuration.isUndefined(Configuration.getConfig()[key])) {
-      console.error(`${Configuration.logPrefix()} Deprecated configuration key '${key}' usage${logMsgToAppend && '. ' + logMsgToAppend}`);
+  private static warnDeprecatedConfigurationKey(key: string, sectionName?: string, logMsgToAppend = '') {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (sectionName && !Configuration.isUndefined(Configuration.getConfig()[sectionName]) && !Configuration.isUndefined(Configuration.getConfig()[sectionName][key])) {
+      console.error(chalk`{green ${Configuration.logPrefix()}} {red Deprecated configuration key '${key}' usage in section '${sectionName}'${logMsgToAppend && '. ' + logMsgToAppend}}`);
+    } else if (!Configuration.isUndefined(Configuration.getConfig()[key])) {
+      console.error(chalk`{green ${Configuration.logPrefix()}} {red Deprecated configuration key '${key}' usage${logMsgToAppend && '. ' + logMsgToAppend}}`);
     }
   }
 
@@ -147,6 +175,18 @@ export default class Configuration {
     }
   }
 
+  private static getDefaultPerformanceStorageURI(storageType: StorageType) {
+    const SQLiteFileName = `${Constants.DEFAULT_PERFORMANCE_RECORDS_DB_NAME}.db`;
+    switch (storageType) {
+      case StorageType.JSON_FILE:
+        return `file://${path.join(path.resolve(__dirname, '../../'), Constants.DEFAULT_PERFORMANCE_RECORDS_FILENAME)}`;
+      case StorageType.SQLITE:
+        return `file://${path.join(path.resolve(__dirname, '../../'), SQLiteFileName)}`;
+      default:
+        throw new Error(`Performance storage URI is mandatory with storage type '${storageType}'`);
+    }
+  }
+
   private static objectHasOwnProperty(object: any, property: string): boolean {
     return Object.prototype.hasOwnProperty.call(object, property) as boolean;
   }
@@ -158,9 +198,13 @@ export default class Configuration {
   private static handleFileException(logPrefix: string, fileType: string, filePath: string, error: NodeJS.ErrnoException): void {
     const prefix = logPrefix.length !== 0 ? logPrefix + ' ' : '';
     if (error.code === 'ENOENT') {
-      console.error(prefix + fileType + ' file ' + filePath + ' not found: ', error);
+      console.error(chalk.green(prefix) + chalk.red(fileType + ' file ' + filePath + ' not found: '), error);
+    } else if (error.code === 'EEXIST') {
+      console.error(chalk.green(prefix) + chalk.red(fileType + ' file ' + filePath + ' already exists: '), error);
+    } else if (error.code === 'EACCES') {
+      console.error(chalk.green(prefix) + chalk.red(fileType + ' file ' + filePath + ' access denied: '), error);
     } else {
-      console.error(prefix + fileType + ' file ' + filePath + ' opening error: ', error);
+      console.error(chalk.green(prefix) + chalk.red(fileType + ' file ' + filePath + ' error: '), error);
     }
     throw error;
   }

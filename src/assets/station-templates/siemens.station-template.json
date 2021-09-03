@@ -35,6 +35,11 @@
         "key": "AuthorizeRemoteTxRequests",
         "readonly": false,
         "value": "false"
+      },
+      {
+        "key": "WebSocketPingInterval",
+        "readonly": false,
+        "value": "60"
       }
     ]
   },
@@ -64,8 +69,6 @@
       "MeterValues": [
         {
           "context": "Sample.Periodic",
-          "format": "Raw",
-          "measurand": "Energey.Active.Import.Register",
           "unit": "Wh"
         }
       ]

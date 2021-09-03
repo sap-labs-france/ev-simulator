@@ -1,4 +1,4 @@
-# ev-simulator
+# charging-stations-simulator
 
 ## Summary
 
@@ -22,13 +22,13 @@ Key | Value(s) | Default Value | Value type | Description
 --- | -------| --------------| ---------- | ------------
 supervisionURLs | | [] | string[] |  array of connection URIs to OCPP-J servers
 distributeStationsToTenantsEqually | true/false | true | boolean | distribute charging stations uniformly to the OCPP-J servers
-statisticsDisplayInterval | | 60 | integer | seconds between charging stations statistics output in the logs 
 workerProcess | workerSet/staticPool/dynamicPool | workerSet | string | worker threads process type
 workerStartDelay | | 500 | integer | milliseconds to wait at charging station worker threads startup
 workerPoolMinSize | | 4 | integer | worker threads pool minimum number of threads
 workerPoolMaxSize | | 16 | integer | worker threads pool maximum number of threads
-workerPoolStrategy | ROUND_ROBIN/LESS_RECENTLY_USED/... | [poolifier](https://github.com/pioardi/poolifier) default: ROUND_ROBBIN | string | worker threads pool [poolifier](https://github.com/pioardi/poolifier) worker choice strategy
+workerPoolStrategy | ROUND_ROBIN/LESS_RECENTLY_USED/... | [poolifier](https://github.com/poolifier/poolifier) default: ROUND_ROBBIN | string | worker threads pool [poolifier](https://github.com/poolifier/poolifier) worker choice strategy
 chargingStationsPerWorker | | 1 | integer | number of charging stations per worker threads for the `workerSet` process type
+logStatisticsInterval | | 60 | integer | seconds between charging stations statistics output in the logs 
 logConsole | true/false | false | boolean | output logs on the console 
 logFormat | | simple | string | winston log format
 logRotate | true/false | true | boolean | enable daily log files rotation
@@ -36,13 +36,27 @@ logMaxFiles | | 7 | integer | maximum number of log files to keep
 logLevel | emerg/alert/crit/error/warning/notice/info/debug | info | string | winston logging level
 logFile | | combined.log | string | log file relative path
 logErrorFile | | error.log | string | error log file relative path 
-stationTemplateURLs | | {}[] | { file: string; numberOfStations: number; }[] | array of charging template file URIs
- 
+performanceStorage | | { "enabled": false, "type": "jsonfile", "file:///performanceMeasurements.json" } | { enabled: string; type: string; URI: string; } where type can be 'jsonfile', 'mysql', 'mariadb', 'sqlite' or 'mongodb' | performance storage configuration section
+stationTemplateURLs | | {}[] | { file: string; numberOfStations: number; }[] | array of charging station templates URIs configuration section (template file name and number of stations)
+
+#### Worker process model: 
+
+- **workerSet**:
+  Worker set executing each a static number (chargingStationsPerWorker) of simulated charging stations from the total
+
+- **staticPool**:
+  Statically sized worker pool executing a static total number of simulated charging stations    
+
+- **dynamicPool**:
+  Dynamically sized worker pool executing a static total number of simulated charging stations 
+
 ### Charging station template
 
 Key | Value(s) | Default Value | Value type | Description 
 --- | -------| --------------| ---------- | ------------
 supervisionURL | | '' | string | connection URI to OCPP-J server
+supervisionUser | | '' | string | basic HTTP authentication user to OCPP-J server
+supervisionPassword | | '' | string | basic HTTP authentication password to OCPP-J server
 ocppVersion | 1.6 | 1.6 | string | OCPP version 
 ocppProtocol | json | json | string | OCPP protocol
 authorizationFile | | '' | string | RFID tags list file relative to src/assets path
@@ -63,6 +77,7 @@ numberOfConnectors | | | integer\|integer[] | charging stations number of connec
 useConnectorId0 | true/false | true | boolean | use connector id 0 definition from the template
 randomConnectors | true/false | false | boolean | randomize runtime connector id affectation from the connector id definition in template
 resetTime | | 60 | integer | seconds to wait before the charging stations come back at reset
+autoRegister | true/false | false | boolean | set the charging station as registered at boot notification for testing purpose
 autoReconnectMaxRetries | | -1 (unlimited) | integer | connection retries to the OCPP-J server
 reconnectExponentialDelay | true/false | false | boolean | connection delay retry to the OCPP-J server
 registrationMaxRetries | | -1 (unlimited) | integer | charging stations boot notification retries
@@ -74,9 +89,9 @@ meteringPerTransaction | true/false | true | boolean | enable metering history o
 transactionDataMeterValues | true/false | false | boolean | enable transaction data MeterValues at stop transaction
 mainVoltageMeterValues | true/false | true | boolean | include charging station main voltage MeterValues on three phased charging stations
 phaseLineToLineVoltageMeterValues | true/false | true | boolean | include charging station line to line voltage MeterValues on three phased charging stations
-Configuration | | | ChargingStationConfiguration | charging stations OCPP configuration parameters
-AutomaticTransactionGenerator | | | AutomaticTransactionGenerator | charging stations ATG configuration
-Connectors | | | Connectors | charging stations connectors configuration
+Configuration | | | ChargingStationConfiguration | charging stations OCPP parameters configuration section
+AutomaticTransactionGenerator | | | AutomaticTransactionGenerator | charging stations ATG configuration section
+Connectors | | | Connectors | charging stations connectors configuration section
 
 #### Configuration section
 
@@ -193,7 +208,7 @@ make SUBMODULES_INIT=false
 
 #### Firmware Management Profile
 
-- :x: GetDiagnostics
+- :white_check_mark: GetDiagnostics
 - :x: DiagnosticsStatusNotification
 - :x: FirmwareStatusNotification
 - :x: UpdateFirmware
@@ -276,6 +291,6 @@ All kind of OCPP parameters are supported in a charging station template. The li
 
 ## License
 
-This file and all other files in this repository are licensed under the Apache Software License, v.2 and copyrighted under the copyright in [NOTICE](NOTICE) file, except as noted otherwise in the [LICENSE](LICENSE) file.
+This file and all other files in this repository are licensed under the Apache Software License, v.2 and copyrighted under the copyright in [NOTICE](NOTICE) file, except as noted otherwise in the [LICENSE](LICENSE) file or the code source file header.
 
 Please note that Docker images can contain other software which may be licensed under different licenses. This LICENSE and NOTICE files are also included in the Docker image. For any usage of built Docker images please make sure to check the licenses of the artifacts contained in the images.

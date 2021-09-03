@@ -10,8 +10,8 @@ export default abstract class WorkerAbstract {
   /**
    * `WorkerAbstract` constructor.
    *
-   * @param {string} workerScript
-   * @param {number} workerStartDelay
+   * @param workerScript
+   * @param workerStartDelay
    */
   constructor(workerScript: string, workerStartDelay: number = Constants.WORKER_START_DELAY) {
     this.workerScript = workerScript;

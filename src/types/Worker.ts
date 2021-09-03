@@ -13,22 +13,30 @@ export interface WorkerOptions {
   poolMinSize?: number;
   elementsPerWorker?: number;
   poolOptions?: PoolOptions<Worker>;
+  messageHandler?: (message: unknown) => void | Promise<void>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface WorkerData {}
 
-export interface StationWorkerData extends WorkerData {
+export interface ChargingStationWorkerData extends WorkerData {
   index: number;
   templateFile: string;
 }
 
 export interface WorkerSetElement {
-  worker: Worker,
-  numberOfWorkerElements: number
+  worker: Worker;
+  numberOfWorkerElements: number;
 }
 
-export enum WorkerEvents {
+export interface WorkerMessage {
+  id: WorkerMessageEvents;
+  data: any;
+}
+
+export enum WorkerMessageEvents {
   START_WORKER_ELEMENT = 'startWorkerElement',
+  STOP_WORKER_ELEMENT = 'stopWorkerElement',
+  PERFORMANCE_STATISTICS = 'performanceStatistics'
 }
 

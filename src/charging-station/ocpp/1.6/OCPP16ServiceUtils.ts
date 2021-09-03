@@ -1,6 +1,11 @@
+// Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
+
 import { MeterValueContext, MeterValueLocation, MeterValueUnit, OCPP16MeterValue, OCPP16MeterValueMeasurand, OCPP16MeterValuePhase, OCPP16SampledValue } from '../../../types/ocpp/1.6/MeterValues';
 
 import ChargingStation from '../../ChargingStation';
+import { ErrorType } from '../../../types/ocpp/ErrorType';
+import OCPPError from '../OCPPError';
+import { RequestCommand } from '../../../types/ocpp/Requests';
 import { SampledValueTemplate } from '../../../types/Connectors';
 import Utils from '../../../utils/Utils';
 import logger from '../../../utils/Logger';
@@ -10,19 +15,19 @@ export class OCPP16ServiceUtils {
     if (Utils.isUndefined(chargingStation.stationInfo.powerDivider)) {
       const errMsg = `${chargingStation.logPrefix()} MeterValues measurand ${measurandType ?? OCPP16MeterValueMeasurand.ENERGY_ACTIVE_IMPORT_REGISTER}: powerDivider is undefined`;
       logger.error(errMsg);
-      throw Error(errMsg);
+      throw new OCPPError(ErrorType.INTERNAL_ERROR, errMsg, RequestCommand.METER_VALUES);
     } else if (chargingStation.stationInfo?.powerDivider <= 0) {
       const errMsg = `${chargingStation.logPrefix()} MeterValues measurand ${measurandType ?? OCPP16MeterValueMeasurand.ENERGY_ACTIVE_IMPORT_REGISTER}: powerDivider have zero or below value ${chargingStation.stationInfo.powerDivider}`;
       logger.error(errMsg);
-      throw Error(errMsg);
+      throw new OCPPError(ErrorType.INTERNAL_ERROR, errMsg), RequestCommand.METER_VALUES;
     }
   }
 
   public static buildSampledValue(sampledValueTemplate: SampledValueTemplate, value: number, context?: MeterValueContext, phase?: OCPP16MeterValuePhase): OCPP16SampledValue {
-    const sampledValueValue = value ?? (sampledValueTemplate.value ?? null);
-    const sampledValueContext = context ?? (sampledValueTemplate.context ?? null);
-    const sampledValueLocation = sampledValueTemplate.location ?? OCPP16ServiceUtils.getMeasurandDefaultLocation(sampledValueTemplate.measurand ?? null);
-    const sampledValuePhase = phase ?? (sampledValueTemplate.phase ?? null);
+    const sampledValueValue = value ?? (sampledValueTemplate?.value ?? null);
+    const sampledValueContext = context ?? (sampledValueTemplate?.context ?? null);
+    const sampledValueLocation = sampledValueTemplate?.location ?? OCPP16ServiceUtils.getMeasurandDefaultLocation(sampledValueTemplate?.measurand ?? null);
+    const sampledValuePhase = phase ?? (sampledValueTemplate?.phase ?? null);
     return {
       ...!Utils.isNullOrUndefined(sampledValueTemplate.unit) && { unit: sampledValueTemplate.unit },
       ...!Utils.isNullOrUndefined(sampledValueContext) && { context: sampledValueContext },

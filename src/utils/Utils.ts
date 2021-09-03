@@ -53,15 +53,15 @@ export default class Utils {
   }
 
   static convertToInt(value: any): number {
-    let changedValue = value;
+    let changedValue: number = value;
     if (!value) {
       return 0;
     }
     if (Number.isSafeInteger(value)) {
-      return value;
+      return value as number;
     }
     // Check
-    if (typeof value === 'string') {
+    if (Utils.isString(value)) {
       // Create Object
       changedValue = parseInt(value);
     }
@@ -69,12 +69,12 @@ export default class Utils {
   }
 
   static convertToFloat(value: any): number {
-    let changedValue = value;
+    let changedValue: number = value;
     if (!value) {
       return 0;
     }
     // Check
-    if (typeof value === 'string') {
+    if (Utils.isString(value)) {
       // Create Object
       changedValue = parseFloat(value);
     }
@@ -190,8 +190,8 @@ export default class Utils {
   static insertAt = (str: string, subStr: string, pos: number): string => `${str.slice(0, pos)}${subStr}${str.slice(pos)}`;
 
   /**
-   * @param {number} [retryNumber=0]
-   * @returns {number} delay in milliseconds
+   * @param [retryNumber=0]
+   * @returns delay in milliseconds
    */
   static exponentialDelay(retryNumber = 0): number {
     const delay = Math.pow(2, retryNumber) * 100;
@@ -202,8 +202,8 @@ export default class Utils {
   /**
    * Convert websocket error code to human readable string message
    *
-   * @param {number} code websocket error code
-   * @returns {string} human readable string message
+   * @param code websocket error code
+   * @returns human readable string message
    */
   static getWebSocketCloseEventStatusString(code: number): string {
     if (code >= 0 && code <= 999) {

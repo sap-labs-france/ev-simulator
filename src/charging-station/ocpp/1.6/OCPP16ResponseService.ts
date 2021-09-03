@@ -1,3 +1,5 @@
+// Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
+
 import { AuthorizeRequest, OCPP16AuthorizationStatus, OCPP16AuthorizeResponse, OCPP16StartTransactionResponse, OCPP16StopTransactionResponse, StartTransactionRequest, StopTransactionRequest } from '../../../types/ocpp/1.6/Transaction';
 import { HeartbeatRequest, OCPP16BootNotificationRequest, OCPP16RequestCommand, StatusNotificationRequest } from '../../../types/ocpp/1.6/Requests';
 import { HeartbeatResponse, OCPP16BootNotificationResponse, OCPP16RegistrationStatus, StatusNotificationResponse } from '../../../types/ocpp/1.6/Responses';
@@ -53,6 +55,15 @@ export default class OCPP16ResponseService extends OCPPResponseService {
     if (this.chargingStation.getConnector(connectorId)?.transactionStarted) {
       logger.debug(this.chargingStation.logPrefix() + ' Trying to start a transaction on an already used connector ' + connectorId.toString() + ': %j', this.chargingStation.getConnector(connectorId));
       return;
+    }
+    if (this.chargingStation.getConnector(connectorId)?.status !== OCPP16ChargePointStatus.AVAILABLE
+        && this.chargingStation.getConnector(connectorId)?.status !== OCPP16ChargePointStatus.PREPARING) {
+      logger.error(`${this.chargingStation.logPrefix()} Trying to start a transaction on connector ${connectorId.toString()} with status ${this.chargingStation.getConnector(connectorId)?.status}`);
+      return;
+    }
+    if (!Number.isInteger(payload.transactionId)) {
+      logger.warn(`${this.chargingStation.logPrefix()} Trying to start a transaction on connector ${connectorId.toString()} with a non integer transaction Id ${payload.transactionId}, converting to integer`);
+      payload.transactionId = Utils.convertToInt(payload.transactionId);
     }
 
     if (payload.idTagInfo?.status === OCPP16AuthorizationStatus.ACCEPTED) {

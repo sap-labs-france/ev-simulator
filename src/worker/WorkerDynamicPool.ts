@@ -4,22 +4,24 @@ import Utils from '../utils/Utils';
 import { Worker } from 'worker_threads';
 import WorkerAbstract from './WorkerAbstract';
 import { WorkerData } from '../types/Worker';
+import { WorkerUtils } from './WorkerUtils';
 
 export default class WorkerDynamicPool<T> extends WorkerAbstract {
-  private pool: DynamicPool;
+  private pool: DynamicThreadPool<WorkerData>;
 
   /**
    * Create a new `WorkerDynamicPool`.
    *
-   * @param {string} workerScript
-   * @param {number} min
-   * @param {number} max
-   * @param {number} workerStartDelay
-   * @param {PoolOptions} opts
+   * @param workerScript
+   * @param min
+   * @param max
+   * @param workerStartDelay
+   * @param opts
    */
   constructor(workerScript: string, min: number, max: number, workerStartDelay?: number, opts?: PoolOptions<Worker>) {
     super(workerScript, workerStartDelay);
-    this.pool = DynamicPool.getInstance(min, max, this.workerScript, opts);
+    opts.exitHandler = opts?.exitHandler ?? WorkerUtils.defaultExitHandler;
+    this.pool = new DynamicThreadPool<WorkerData>(min, max, this.workerScript, opts);
   }
 
   get size(): number {
@@ -32,15 +34,17 @@ export default class WorkerDynamicPool<T> extends WorkerAbstract {
 
   /**
    *
-   * @returns {Promise<void>}
+   * @returns
    * @public
    */
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  public async start(): Promise<void> { }
+  public async start(): Promise<void> {
+    // This is intentional
+  }
 
   /**
    *
-   * @returns {Promise<void>}
+   * @returns
    * @public
    */
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -50,33 +54,13 @@ export default class WorkerDynamicPool<T> extends WorkerAbstract {
 
   /**
    *
-   * @param {T} elementData
-   * @returns {Promise<void>}
+   * @param elementData
+   * @returns
    * @public
    */
   public async addElement(elementData: T): Promise<void> {
     await this.pool.execute(elementData);
     // Start worker sequentially to optimize memory at startup
     await Utils.sleep(this.workerStartDelay);
-  }
-}
-
-class DynamicPool extends DynamicThreadPool<WorkerData> {
-  private static instance: DynamicPool;
-
-  private constructor(min: number, max: number, workerScript: string, opts?: PoolOptions<Worker>) {
-    super(min, max, workerScript, opts);
-  }
-
-  public static getInstance(min: number, max: number, workerScript: string, opts?: PoolOptions<Worker>): DynamicPool {
-    if (!DynamicPool.instance) {
-      opts.exitHandler = opts?.exitHandler ?? ((code) => {
-        if (code !== 0) {
-          console.error(`Worker stopped with exit code ${code}`);
-        }
-      });
-      DynamicPool.instance = new DynamicPool(min, max, workerScript, opts);
-    }
-    return DynamicPool.instance;
   }
 }
