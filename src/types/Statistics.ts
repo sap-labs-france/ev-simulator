@@ -1,14 +1,6 @@
 import { CircularArray } from '../utils/CircularArray';
-import { EntryType } from 'perf_hooks';
 
-export interface PerfEntry {
-  name: string;
-  entryType: EntryType;
-  startTime: number;
-  duration: number;
-}
-
-export interface CommandStatisticsData {
+export interface StatisticsData {
   countRequest: number;
   countResponse: number;
   countError: number;
@@ -20,10 +12,14 @@ export interface CommandStatisticsData {
   totalTimeMeasurement: number;
   avgTimeMeasurement: number;
   medTimeMeasurement: number;
+  ninetyFiveThPercentileTimeMeasurement: number;
   stdDevTimeMeasurement: number;
 }
 
-export default interface CommandStatistics {
+export default interface Statistics {
   id: string;
-  commandsStatisticsData: Record<string, CommandStatisticsData>;
+  URI: string;
+  createdAt: Date;
+  updatedAt?: Date;
+  statisticsData: Record<string, StatisticsData>;
 }

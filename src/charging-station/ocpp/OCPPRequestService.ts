@@ -1,5 +1,5 @@
 import { AuthorizeResponse, StartTransactionResponse, StopTransactionReason, StopTransactionResponse } from '../../types/ocpp/Transaction';
-import { IncomingRequestCommand, RequestCommand } from '../../types/ocpp/Requests';
+import { DiagnosticsStatus, IncomingRequestCommand, RequestCommand } from '../../types/ocpp/Requests';
 
 import { BootNotificationResponse } from '../../types/ocpp/Responses';
 import { ChargePointErrorCode } from '../../types/ocpp/ChargePointErrorCode';
@@ -9,8 +9,9 @@ import Constants from '../../utils/Constants';
 import { ErrorType } from '../../types/ocpp/ErrorType';
 import { MessageType } from '../../types/ocpp/MessageType';
 import { MeterValue } from '../../types/ocpp/MeterValues';
-import OCPPError from '../OcppError';
+import OCPPError from './OCPPError';
 import OCPPResponseService from './OCPPResponseService';
+import PerformanceStatistics from '../../performance/PerformanceStatistics';
 import logger from '../../utils/Logger';
 
 export default abstract class OCPPRequestService {
@@ -22,7 +23,8 @@ export default abstract class OCPPRequestService {
     this.ocppResponseService = ocppResponseService;
   }
 
-  public async sendMessage(messageId: string, commandParams: any, messageType: MessageType, commandName: RequestCommand | IncomingRequestCommand): Promise<any> {
+  public async sendMessage(messageId: string, commandParams: any, messageType: MessageType, commandName: RequestCommand | IncomingRequestCommand,
+      skipBufferingOnError = false): Promise<unknown> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     // Send a message through wsConnection
@@ -47,14 +49,16 @@ export default abstract class OCPPRequestService {
           messageToSend = JSON.stringify([messageType, messageId, commandParams.code ? commandParams.code : ErrorType.GENERIC_ERROR, commandParams.message ? commandParams.message : '', commandParams.details ? commandParams.details : {}]);
           break;
       }
-      // Check if wsConnection opened and charging station registered
-      if (this.chargingStation.isWebSocketOpen() && (this.chargingStation.isRegistered() || commandName === RequestCommand.BOOT_NOTIFICATION)) {
-        if (this.chargingStation.getEnableStatistics()) {
-          this.chargingStation.performanceStatistics.addMessage(commandName, messageType);
-        }
+      if (this.chargingStation.getEnableStatistics()) {
+        this.chargingStation.performanceStatistics.addRequestStatistic(commandName, messageType);
+      }
+      // Check if wsConnection opened
+      if (this.chargingStation.isWebSocketConnectionOpened()) {
         // Yes: Send Message
+        const beginId = PerformanceStatistics.beginMeasure(commandName);
         this.chargingStation.wsConnection.send(messageToSend);
-      } else if (commandName !== RequestCommand.BOOT_NOTIFICATION) {
+        PerformanceStatistics.endMeasure(commandName, beginId);
+      } else if (!skipBufferingOnError) {
         // Buffer it
         this.chargingStation.addToMessageQueue(messageToSend);
         // Reject it
@@ -72,12 +76,12 @@ export default abstract class OCPPRequestService {
       /**
        * Function that will receive the request's response
        *
-       * @param {Record<string, unknown> | string} payload
-       * @param {Record<string, unknown>} requestPayload
+       * @param payload
+       * @param requestPayload
        */
       async function responseCallback(payload: Record<string, unknown> | string, requestPayload: Record<string, unknown>): Promise<void> {
         if (self.chargingStation.getEnableStatistics()) {
-          self.chargingStation.performanceStatistics.addMessage(commandName, MessageType.CALL_RESULT_MESSAGE);
+          self.chargingStation.performanceStatistics.addRequestStatistic(commandName, MessageType.CALL_RESULT_MESSAGE);
         }
         // Send the response
         await self.ocppResponseService.handleResponse(commandName as RequestCommand, payload, requestPayload);
@@ -87,11 +91,11 @@ export default abstract class OCPPRequestService {
       /**
        * Function that will receive the request's rejection
        *
-       * @param {OCPPError} error
+       * @param error
        */
       function rejectCallback(error: OCPPError): void {
         if (self.chargingStation.getEnableStatistics()) {
-          self.chargingStation.performanceStatistics.addMessage(commandName, MessageType.CALL_ERROR_MESSAGE);
+          self.chargingStation.performanceStatistics.addRequestStatistic(commandName, MessageType.CALL_ERROR_MESSAGE);
         }
         logger.debug(`${self.chargingStation.logPrefix()} Error: %j occurred when calling command %s with parameters: %j`, error, commandName, commandParams);
         // Build Exception
@@ -103,8 +107,8 @@ export default abstract class OCPPRequestService {
     });
   }
 
-  public handleRequestError(commandName: RequestCommand, error: Error): void {
-    logger.error(this.chargingStation.logPrefix() + ' Send ' + commandName + ' error: %j', error);
+  protected handleRequestError(commandName: RequestCommand, error: Error): void {
+    logger.error(this.chargingStation.logPrefix() + ' Request command ' + commandName + ' error: %j', error);
     throw error;
   }
 
@@ -114,8 +118,9 @@ export default abstract class OCPPRequestService {
   public abstract sendAuthorize(connectorId: number, idTag?: string): Promise<AuthorizeResponse>;
   public abstract sendStartTransaction(connectorId: number, idTag?: string): Promise<StartTransactionResponse>;
   public abstract sendStopTransaction(transactionId: number, meterStop: number, idTag?: string, reason?: StopTransactionReason): Promise<StopTransactionResponse>;
-  public abstract sendMeterValues(connectorId: number, transactionId: number, interval: number, self: OCPPRequestService): Promise<void>;
+  public abstract sendMeterValues(connectorId: number, transactionId: number, interval: number): Promise<void>;
   public abstract sendTransactionBeginMeterValues(connectorId: number, transactionId: number, beginMeterValue: MeterValue): Promise<void>;
   public abstract sendTransactionEndMeterValues(connectorId: number, transactionId: number, endMeterValue: MeterValue): Promise<void>;
+  public abstract sendDiagnosticsStatusNotification(diagnosticsStatus: DiagnosticsStatus): Promise<void>;
   public abstract sendError(messageId: string, error: OCPPError, commandName: RequestCommand | IncomingRequestCommand): Promise<unknown>;
 }

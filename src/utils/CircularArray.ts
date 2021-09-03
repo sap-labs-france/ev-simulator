@@ -1,4 +1,6 @@
-export const DEFAULT_CIRCULAR_ARRAY_SIZE = 2000;
+// Copyright Jerome Benoit. 2021. All Rights Reserved.
+
+export const DEFAULT_CIRCULAR_ARRAY_SIZE = Number.MAX_SAFE_INTEGER;
 
 /** Array with a maximum length shifting items when full. */
 export class CircularArray<T> extends Array<T> {

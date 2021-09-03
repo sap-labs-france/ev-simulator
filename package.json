@@ -1,16 +1,23 @@
 {
-  "name": "ev-simulator",
-  "version": "1.0.26",
+  "name": "charging-stations-simulator",
+  "version": "1.0.54",
   "engines": {
     "node": "14.x.x",
     "npm": "6.x.x"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sap-labs-france/ev-simulator.git"
+    "url": "https://github.com/jerome-benoit/charging-stations-simulator.git"
   },
   "description": "Electric Vehicle charging stations simulator",
   "author": "SAP E-Mobility Labs France <e-mobility@sap.com>",
+  "contributors": [
+    {
+      "name": "Jérôme Benoit",
+      "email": "jerome.benoit@piment-noir.org",
+      "url": "https://github.com/jerome-benoit"
+    }
+  ],
   "license": "Apache-2.0",
   "licenses": [
     {
@@ -20,10 +27,10 @@
   ],
   "main": "dist/start.js",
   "auto-changelog": {
-    "commitUrl": "https://github.com/sap-labs-france/ev-simulator/commit/{id}",
-    "issueUrl": "https://github.com/sap-labs-france/ev-simulator/issues/{id}",
-    "mergeUrl": "https://github.com/sap-labs-france/ev-simulator/pull/{id}",
-    "compareUrl": "https://github.com/sap-labs-france/ev-simulator/compare/{from}...{to}"
+    "commitUrl": "https://github.com/jerome-benoit/charging-stations-simulator/commit/{id}",
+    "issueUrl": "https://github.com/jerome-benoit/charging-stations-simulator/issues/{id}",
+    "mergeUrl": "https://github.com/jerome-benoit/charging-stations-simulator/pull/{id}",
+    "compareUrl": "https://github.com/jerome-benoit/charging-stations-simulator/compare/{from}...{to}"
   },
   "scripts": {
     "prestart": "npm run build",
@@ -43,13 +50,12 @@
     "lint": "cross-env TIMING=1 eslint --ext .js,.ts src",
     "lint:fix": "cross-env TIMING=1 eslint --fix --ext .js,.ts src",
     "import-sort": "npx import-sort-cli --write 'src/**/*.ts{,x}'",
-    "tsc": "tsc",
-    "pretest": "npm run build:dev",
     "test": "cross-env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\"}' nyc mocha test/**/*Test.ts",
     "coverage": "nyc report --reporter=lcov",
     "coverage:html": "nyc report --reporter=html",
     "clinic:clean": "clinic clean",
     "npm-check": "npm-check",
+    "robohydra": "robohydra test/robohydra/config.json",
     "git:sinit": "git submodule update --init --recursive --force",
     "git:sdiff": "git diff && git submodule foreach 'git diff'",
     "git:supdate": "git submodule update --remote --recursive --merge",
@@ -57,14 +63,20 @@
     "release": "release-it"
   },
   "dependencies": {
-    "mongodb": "^3.6.9",
-    "poolifier": "^2.0.2",
+    "@mikro-orm/core": "^4.5.9",
+    "@mikro-orm/mariadb": "^4.5.9",
+    "@mikro-orm/sqlite": "^4.5.9",
+    "basic-ftp": "^4.6.6",
+    "chalk": "^4.1.2",
+    "mongodb": "^4.1.1",
+    "poolifier": "^2.1.0",
     "source-map-support": "^0.5.19",
-    "tslib": "^2.3.0",
+    "tar": "^6.1.11",
+    "tslib": "^2.3.1",
     "uuid": "^8.3.2",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
-    "ws": "^7.5.1"
+    "ws": "^8.2.1"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.3",
@@ -73,35 +85,36 @@
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@rollup/plugin-json": "^4.1.0",
-    "@types/mocha": "^8.2.2",
-    "@types/mochawesome": "^6.2.0",
-    "@types/node": "^14.17.4",
-    "@types/uuid": "^8.3.0",
-    "@types/ws": "^7.4.5",
-    "@typescript-eslint/eslint-plugin": "^4.28.1",
-    "@typescript-eslint/parser": "^4.28.1",
+    "@types/mocha": "^9.0.0",
+    "@types/mochawesome": "^6.2.1",
+    "@types/node": "^14.17.14",
+    "@types/tar": "^4.0.5",
+    "@types/uuid": "^8.3.1",
+    "@types/ws": "^7.4.7",
+    "@typescript-eslint/eslint-plugin": "^4.30.0",
+    "@typescript-eslint/parser": "^4.30.0",
     "auto-changelog": "^2.3.0",
     "clinic": "^9.0.0",
     "cross-env": "^7.0.3",
-    "eslint": "^7.29.0",
-    "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-jsdoc": "^35.4.1",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-jsdoc": "^36.0.8",
     "eslint-plugin-node": "^11.1.0",
-    "expect": "^27.0.6",
-    "mbt": "^1.2.1",
-    "mocha": "^9.0.1",
+    "expect": "^27.1.0",
+    "mocha": "^9.1.1",
     "mochawesome": "^6.2.2",
     "npm-check": "^5.9.2",
     "nyc": "^15.1.0",
-    "release-it": "^14.10.0",
-    "rollup": "^2.52.3",
+    "release-it": "^14.11.5",
+    "robohydra": "^0.6.9",
+    "rollup": "^2.56.3",
     "rollup-plugin-analyzer": "^4.0.0",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-istanbul": "^3.0.0",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.30.0",
-    "ts-node": "^10.0.0",
-    "typescript": "^4.3.4"
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.2"
   }
 }

@@ -34,6 +34,8 @@ export interface AutomaticTransactionGenerator {
 
 export default interface ChargingStationTemplate {
   supervisionURL?: string;
+  supervisionUser?: string;
+  supervisionPassword?: string;
   ocppVersion?: OCPPVersion;
   ocppProtocol?: OCPPProtocol;
   authorizationFile?: string;
@@ -54,6 +56,7 @@ export default interface ChargingStationTemplate {
   useConnectorId0?: boolean;
   randomConnectors?: boolean;
   resetTime?: number;
+  autoRegister: boolean;
   autoReconnectMaxRetries?: number;
   reconnectExponentialDelay?: boolean;
   registrationMaxRetries?: number;
