@@ -70,7 +70,7 @@
     "chalk": "^4.1.2",
     "mongodb": "^4.1.1",
     "poolifier": "^2.1.0",
-    "source-map-support": "^0.5.19",
+    "source-map-support": "^0.5.20",
     "tar": "^6.1.11",
     "tslib": "^2.3.1",
     "uuid": "^8.3.2",
