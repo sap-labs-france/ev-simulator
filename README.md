@@ -1,20 +1,49 @@
-# charging-stations-simulator
+# [charging-stations-simulator](https://github.com/jerome-benoit/charging-stations-simulator)
 
 ## Summary
 
 Simple [node.js](https://nodejs.org/) program to simulate a set of charging stations based on the OCPP-J 1.6 protocol.
 
+## Prerequisites
+
+### Windows
+
+* [Chocolatey](https://chocolatey.org/):
+
+```powershell
+choco install -y nodejs-lts
+```
+
+### MacOSX
+
+* [Homebrew](https://brew.sh/):
+
+```shell
+brew install node@14
+```
+
+### GNU/Linux: 
+
+* [NodeSource](https://github.com/nodesource/distributions) Node.js Binary Distributions for version 14.X
+
 ## Configuration syntax
 
 All configuration files are in the JSON standard format.  
 
-The program's global configuration parameters must be within the src/assets/config.json file. A configuration template file is available at [src/assets/config-template.json](src/assets/config-template.json).
+The charging stations simulator's main configuration parameters must be within the `src/assets/config.json` file. A configuration template file is available at [src/assets/config-template.json](src/assets/config-template.json).
 
 All charging station templates are in the directory [src/assets/station-templates](src/assets/station-templates).
 
-A list of RFID tags must be defined for the automatic transaction generator with the default location and name src/assets/authorization-tags.json. A template file is available at [src/assets/authorization-tags-template.json](src/assets/authorization-tags-template.json).
+A list of RFID tags must be defined for the automatic transaction generator with the default location and name `src/assets/authorization-tags.json`. A template file is available at [src/assets/authorization-tags-template.json](src/assets/authorization-tags-template.json).
 
-### Global configuration 
+The charging stations simulator have an automatic configuration files reload feature at change for: 
+* main configuration;
+* charging station templates; 
+* authorization RFID tags.
+
+But the modifications to test have to be done to the files in the build result directory [dist/assets](dist/assets). Once the modifications are finished, they have to be reported or copied to the matching files in the build source directory [src/assets](src/assets) to ensure they will be taken into account at next build. 
+
+### Main configuration 
 
 **src/assets/config.json**:
 
@@ -36,7 +65,7 @@ logMaxFiles | | 7 | integer | maximum number of log files to keep
 logLevel | emerg/alert/crit/error/warning/notice/info/debug | info | string | winston logging level
 logFile | | combined.log | string | log file relative path
 logErrorFile | | error.log | string | error log file relative path 
-performanceStorage | | { "enabled": false, "type": "jsonfile", "file:///performanceMeasurements.json" } | { enabled: string; type: string; URI: string; } where type can be 'jsonfile', 'mysql', 'mariadb', 'sqlite' or 'mongodb' | performance storage configuration section
+performanceStorage | | { "enabled": false, "type": "jsonfile", "file:///performanceRecords.json" } | { enabled: string; type: string; URI: string; } where type can be 'jsonfile' or 'mongodb' | performance storage configuration section
 stationTemplateURLs | | {}[] | { file: string; numberOfStations: number; }[] | array of charging station templates URIs configuration section (template file name and number of stations)
 
 #### Worker process model: 
@@ -177,10 +206,10 @@ In the [docker](./docker) folder:
 make
 ```
 
-Or without the optional git submodules:
+Or with the optional git submodules:
 
 ```bash
-make SUBMODULES_INIT=false
+make SUBMODULES_INIT=true
 ```
 
 ## OCPP-J commands supported
@@ -231,7 +260,7 @@ make SUBMODULES_INIT=false
 
 #### Remote Trigger Profile
 
-- :x: TriggerMessage
+- :white_check_mark: TriggerMessage
 
 ## OCPP-J standard parameters supported
 

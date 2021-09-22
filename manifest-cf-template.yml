@@ -7,6 +7,8 @@ applications:
   - https://github.com/cloudfoundry/nodejs-buildpack
   no-route: true
   health-check-type: process
+  health-check-invocation-timeout: 10
   command: node -r source-map-support/register dist/start.js
   env:
-    OPTIMIZE_MEMORY: true
+    # OPTIMIZE_MEMORY: true
+    NODE_OPTIONS: --max-old-space-size=768
