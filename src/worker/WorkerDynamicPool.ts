@@ -37,7 +37,6 @@ export default class WorkerDynamicPool<T> extends WorkerAbstract {
    * @returns
    * @public
    */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public async start(): Promise<void> {
     // This is intentional
   }
@@ -47,7 +46,6 @@ export default class WorkerDynamicPool<T> extends WorkerAbstract {
    * @returns
    * @public
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async stop(): Promise<void> {
     return this.pool.destroy();
   }

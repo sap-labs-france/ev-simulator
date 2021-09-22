@@ -28,27 +28,8 @@ export default abstract class OCPPRequestService {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     // Send a message through wsConnection
-    return new Promise((resolve: (value?: any | PromiseLike<any>) => void, reject: (reason?: any) => void) => {
-      let messageToSend: string;
-      // Type of message
-      switch (messageType) {
-        // Request
-        case MessageType.CALL_MESSAGE:
-          // Build request
-          this.chargingStation.requests[messageId] = [responseCallback, rejectCallback, commandParams as Record<string, unknown>];
-          messageToSend = JSON.stringify([messageType, messageId, commandName, commandParams]);
-          break;
-        // Response
-        case MessageType.CALL_RESULT_MESSAGE:
-          // Build response
-          messageToSend = JSON.stringify([messageType, messageId, commandParams]);
-          break;
-        // Error Message
-        case MessageType.CALL_ERROR_MESSAGE:
-          // Build Error Message
-          messageToSend = JSON.stringify([messageType, messageId, commandParams.code ? commandParams.code : ErrorType.GENERIC_ERROR, commandParams.message ? commandParams.message : '', commandParams.details ? commandParams.details : {}]);
-          break;
-      }
+    return new Promise((resolve, reject) => {
+      const messageToSend = this.buildMessageToSend(messageId, commandParams, messageType, commandName, responseCallback, rejectCallback);
       if (this.chargingStation.getEnableStatistics()) {
         this.chargingStation.performanceStatistics.addRequestStatistic(commandName, messageType);
       }
@@ -62,15 +43,15 @@ export default abstract class OCPPRequestService {
         // Buffer it
         this.chargingStation.addToMessageQueue(messageToSend);
         // Reject it
-        return rejectCallback(new OCPPError(commandParams.code ? commandParams.code : ErrorType.GENERIC_ERROR, commandParams.message ? commandParams.message : `WebSocket closed for message id '${messageId}' with content '${messageToSend}', message buffered`, commandParams.details ? commandParams.details : {}));
+        return rejectCallback(new OCPPError(commandParams?.code ?? ErrorType.GENERIC_ERROR, commandParams?.message ?? `WebSocket closed for message id '${messageId}' with content '${messageToSend}', message buffered`, commandParams?.details ?? {}));
       }
       // Response?
       if (messageType === MessageType.CALL_RESULT_MESSAGE) {
         // Yes: send Ok
-        resolve();
+        resolve(commandName);
       } else if (messageType === MessageType.CALL_ERROR_MESSAGE) {
         // Send timeout
-        setTimeout(() => rejectCallback(new OCPPError(commandParams.code ? commandParams.code : ErrorType.GENERIC_ERROR, commandParams.message ? commandParams.message : `Timeout for message id '${messageId}' with content '${messageToSend}'`, commandParams.details ? commandParams.details : {})), Constants.OCPP_ERROR_TIMEOUT);
+        setTimeout(() => rejectCallback(new OCPPError(commandParams?.code ?? ErrorType.GENERIC_ERROR, commandParams?.message ?? `Timeout for message id '${messageId}' with content '${messageToSend}'`, commandParams?.details ?? {})), Constants.OCPP_ERROR_TIMEOUT);
       }
 
       /**
@@ -99,8 +80,7 @@ export default abstract class OCPPRequestService {
         }
         logger.debug(`${self.chargingStation.logPrefix()} Error: %j occurred when calling command %s with parameters: %j`, error, commandName, commandParams);
         // Build Exception
-        // eslint-disable-next-line no-empty-function
-        self.chargingStation.requests[messageId] = [() => { }, () => { }, {}];
+        self.chargingStation.requests.set(messageId, [() => { /* This is intentiomal */ }, () => { /* This is intentiomal */ }, {}]);
         // Send error
         reject(error);
       }
@@ -110,6 +90,31 @@ export default abstract class OCPPRequestService {
   protected handleRequestError(commandName: RequestCommand, error: Error): void {
     logger.error(this.chargingStation.logPrefix() + ' Request command ' + commandName + ' error: %j', error);
     throw error;
+  }
+
+  private buildMessageToSend(messageId: string, commandParams: any, messageType: MessageType, commandName: RequestCommand | IncomingRequestCommand,
+      responseCallback: (payload: Record<string, unknown> | string, requestPayload: Record<string, unknown>) => Promise<void>, rejectCallback: (error: OCPPError) => void): string {
+    let messageToSend: string;
+    // Type of message
+    switch (messageType) {
+      // Request
+      case MessageType.CALL_MESSAGE:
+        // Build request
+        this.chargingStation.requests.set(messageId, [responseCallback, rejectCallback, commandParams as Record<string, unknown>]);
+        messageToSend = JSON.stringify([messageType, messageId, commandName, commandParams]);
+        break;
+      // Response
+      case MessageType.CALL_RESULT_MESSAGE:
+        // Build response
+        messageToSend = JSON.stringify([messageType, messageId, commandParams]);
+        break;
+      // Error Message
+      case MessageType.CALL_ERROR_MESSAGE:
+        // Build Error Message
+        messageToSend = JSON.stringify([messageType, messageId, commandParams?.code ?? ErrorType.GENERIC_ERROR, commandParams?.message ?? '', commandParams?.details ?? {}]);
+        break;
+    }
+    return messageToSend;
   }
 
   public abstract sendHeartbeat(): Promise<void>;

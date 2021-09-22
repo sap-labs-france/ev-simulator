@@ -162,12 +162,13 @@ export default class Configuration {
 
   private static getConfigurationFileWatcher(): fs.FSWatcher {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      return fs.watch(Configuration.configurationFilePath).on('change', async (): Promise<void> => {
-        // Nullify to force configuration file reading
-        Configuration.configuration = null;
-        if (!Configuration.isUndefined(Configuration.configurationChangeCallback)) {
-          await Configuration.configurationChangeCallback();
+      return fs.watch(Configuration.configurationFilePath, async (event, filename): Promise<void> => {
+        if (filename && event === 'change') {
+          // Nullify to force configuration file reading
+          Configuration.configuration = null;
+          if (!Configuration.isUndefined(Configuration.configurationChangeCallback)) {
+            await Configuration.configurationChangeCallback();
+          }
         }
       });
     } catch (error) {
@@ -187,11 +188,11 @@ export default class Configuration {
     }
   }
 
-  private static objectHasOwnProperty(object: any, property: string): boolean {
+  private static objectHasOwnProperty(object: unknown, property: string): boolean {
     return Object.prototype.hasOwnProperty.call(object, property) as boolean;
   }
 
-  private static isUndefined(obj: any): boolean {
+  private static isUndefined(obj: unknown): boolean {
     return typeof obj === 'undefined';
   }
 
