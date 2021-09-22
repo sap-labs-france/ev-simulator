@@ -26,14 +26,14 @@ export default class PerformanceStatistics {
   }
 
   public static beginMeasure(id: string): string {
-    const beginId = 'begin' + id.charAt(0).toUpperCase() + id.slice(1);
-    performance.mark(beginId);
-    return beginId;
+    const markId = `${id.charAt(0).toUpperCase() + id.slice(1)}~${Utils.generateUUID()}`;
+    performance.mark(markId);
+    return markId;
   }
 
-  public static endMeasure(name: string, beginId: string): void {
-    performance.measure(name, beginId);
-    performance.clearMarks(beginId);
+  public static endMeasure(name: string, markId: string): void {
+    performance.measure(name, markId);
+    performance.clearMarks(markId);
   }
 
   public addRequestStatistic(command: RequestCommand | IncomingRequestCommand, messageType: MessageType): void {
@@ -98,8 +98,9 @@ export default class PerformanceStatistics {
 
   private initializePerformanceObserver(): void {
     this.performanceObserver = new PerformanceObserver((list) => {
-      this.addPerformanceEntryToStatistics(list.getEntries()[0]);
-      logger.debug(`${this.logPrefix()} '${list.getEntries()[0].name}' performance entry: %j`, list.getEntries()[0]);
+      const lastPerformanceEntry = list.getEntries()[0];
+      this.addPerformanceEntryToStatistics(lastPerformanceEntry);
+      logger.debug(`${this.logPrefix()} '${lastPerformanceEntry.name}' performance entry: %j`, lastPerformanceEntry);
     });
     this.performanceObserver.observe({ entryTypes: ['measure'] });
   }
@@ -113,7 +114,7 @@ export default class PerformanceStatistics {
       this.displayInterval = setInterval(() => {
         this.logStatistics();
       }, Configuration.getLogStatisticsInterval() * 1000);
-      logger.info(this.logPrefix() + ' logged every ' + Utils.secondsToHHMMSS(Configuration.getLogStatisticsInterval()));
+      logger.info(this.logPrefix() + ' logged every ' + Utils.formatDurationSeconds(Configuration.getLogStatisticsInterval()));
     } else {
       logger.info(this.logPrefix() + ' log interval is set to ' + Configuration.getLogStatisticsInterval().toString() + '. Not logging statistics');
     }

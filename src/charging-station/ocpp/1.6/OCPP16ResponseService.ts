@@ -1,7 +1,7 @@
 // Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
 
 import { AuthorizeRequest, OCPP16AuthorizationStatus, OCPP16AuthorizeResponse, OCPP16StartTransactionResponse, OCPP16StopTransactionResponse, StartTransactionRequest, StopTransactionRequest } from '../../../types/ocpp/1.6/Transaction';
-import { HeartbeatRequest, OCPP16BootNotificationRequest, OCPP16RequestCommand, StatusNotificationRequest } from '../../../types/ocpp/1.6/Requests';
+import { HeartbeatRequest, OCPP16RequestCommand, StatusNotificationRequest } from '../../../types/ocpp/1.6/Requests';
 import { HeartbeatResponse, OCPP16BootNotificationResponse, OCPP16RegistrationStatus, StatusNotificationResponse } from '../../../types/ocpp/1.6/Responses';
 import { MeterValuesRequest, MeterValuesResponse } from '../../../types/ocpp/1.6/MeterValues';
 
@@ -22,7 +22,7 @@ export default class OCPP16ResponseService extends OCPPResponseService {
     }
   }
 
-  private handleResponseBootNotification(payload: OCPP16BootNotificationResponse, requestPayload: OCPP16BootNotificationRequest): void {
+  private handleResponseBootNotification(payload: OCPP16BootNotificationResponse): void {
     if (payload.status === OCPP16RegistrationStatus.ACCEPTED) {
       this.chargingStation.addConfigurationKey(OCPP16StandardParametersKey.HeartBeatInterval, payload.interval.toString());
       this.chargingStation.addConfigurationKey(OCPP16StandardParametersKey.HeartbeatInterval, payload.interval.toString(), false, false);

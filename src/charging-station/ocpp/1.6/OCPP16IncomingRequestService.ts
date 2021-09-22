@@ -1,9 +1,7 @@
 // Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
 
-import * as url from 'url';
-
-import { ChangeAvailabilityRequest, ChangeConfigurationRequest, ClearChargingProfileRequest, GetConfigurationRequest, GetDiagnosticsRequest, OCPP16AvailabilityType, OCPP16IncomingRequestCommand, RemoteStartTransactionRequest, RemoteStopTransactionRequest, ResetRequest, SetChargingProfileRequest, UnlockConnectorRequest } from '../../../types/ocpp/1.6/Requests';
-import { ChangeAvailabilityResponse, ChangeConfigurationResponse, ClearChargingProfileResponse, GetConfigurationResponse, GetDiagnosticsResponse, SetChargingProfileResponse, UnlockConnectorResponse } from '../../../types/ocpp/1.6/Responses';
+import { ChangeAvailabilityRequest, ChangeConfigurationRequest, ClearChargingProfileRequest, GetConfigurationRequest, GetDiagnosticsRequest, MessageTrigger, OCPP16AvailabilityType, OCPP16IncomingRequestCommand, OCPP16TriggerMessageRequest, RemoteStartTransactionRequest, RemoteStopTransactionRequest, ResetRequest, SetChargingProfileRequest, UnlockConnectorRequest } from '../../../types/ocpp/1.6/Requests';
+import { ChangeAvailabilityResponse, ChangeConfigurationResponse, ClearChargingProfileResponse, GetConfigurationResponse, GetDiagnosticsResponse, OCPP16TriggerMessageResponse, SetChargingProfileResponse, UnlockConnectorResponse } from '../../../types/ocpp/1.6/Responses';
 import { ChargingProfilePurposeType, OCPP16ChargingProfile } from '../../../types/ocpp/1.6/ChargingProfile';
 import { Client, FTPResponse } from 'basic-ftp';
 import { IncomingRequestCommand, RequestCommand } from '../../../types/ocpp/Requests';
@@ -19,6 +17,7 @@ import { OCPP16StandardParametersKey } from '../../../types/ocpp/1.6/Configurati
 import { OCPPConfigurationKey } from '../../../types/ocpp/Configuration';
 import OCPPError from '../OCPPError';
 import OCPPIncomingRequestService from '../OCPPIncomingRequestService';
+import { URL } from 'url';
 import Utils from '../../../utils/Utils';
 import fs from 'fs';
 import logger from '../../../utils/Logger';
@@ -59,7 +58,7 @@ export default class OCPP16IncomingRequestService extends OCPPIncomingRequestSer
       await Utils.sleep(this.chargingStation.stationInfo.resetTime);
       this.chargingStation.start();
     });
-    logger.info(`${this.chargingStation.logPrefix()} ${commandPayload.type} reset command received, simulating it. The station will be back online in ${Utils.milliSecondsToHHMMSS(this.chargingStation.stationInfo.resetTime)}`);
+    logger.info(`${this.chargingStation.logPrefix()} ${commandPayload.type} reset command received, simulating it. The station will be back online in ${Utils.formatDurationMilliSeconds(this.chargingStation.stationInfo.resetTime)}`);
     return Constants.OCPP_RESPONSE_ACCEPTED;
   }
 
@@ -243,7 +242,7 @@ export default class OCPP16IncomingRequestService extends OCPPIncomingRequestSer
     if (connectorId === 0) {
       let response: ChangeAvailabilityResponse = Constants.OCPP_AVAILABILITY_RESPONSE_ACCEPTED;
       for (const connector in this.chargingStation.connectors) {
-        if (this.chargingStation.getConnector(Utils.convertToInt(connector)).transactionStarted) {
+        if (this.chargingStation.getConnector(Utils.convertToInt(connector))?.transactionStarted) {
           response = Constants.OCPP_AVAILABILITY_RESPONSE_SCHEDULED;
         }
         this.chargingStation.getConnector(Utils.convertToInt(connector)).availability = commandPayload.type;
@@ -354,7 +353,7 @@ export default class OCPP16IncomingRequestService extends OCPPIncomingRequestSer
 
   private async handleRequestGetDiagnostics(commandPayload: GetDiagnosticsRequest): Promise<GetDiagnosticsResponse> {
     logger.debug(this.chargingStation.logPrefix() + ' ' + IncomingRequestCommand.GET_DIAGNOSTICS + ' request received: %j', commandPayload);
-    const uri = new url.URL(commandPayload.location);
+    const uri = new URL(commandPayload.location);
     if (uri.protocol.startsWith('ftp:')) {
       let ftpClient: Client;
       try {
@@ -397,6 +396,29 @@ export default class OCPP16IncomingRequestService extends OCPPIncomingRequestSer
       logger.error(`${this.chargingStation.logPrefix()} Unsupported protocol ${uri.protocol} to transfer the diagnostic logs archive`);
       await this.chargingStation.ocppRequestService.sendDiagnosticsStatusNotification(OCPP16DiagnosticsStatus.UploadFailed);
       return Constants.OCPP_RESPONSE_EMPTY;
+    }
+  }
+
+  private handleRequestTriggerMessage(commandPayload: OCPP16TriggerMessageRequest): OCPP16TriggerMessageResponse {
+    try {
+      switch (commandPayload.requestedMessage) {
+        case MessageTrigger.BootNotification:
+          setTimeout(() => {
+            this.chargingStation.ocppRequestService.sendBootNotification(this.chargingStation.getBootNotificationRequest().chargePointModel,
+              this.chargingStation.getBootNotificationRequest().chargePointVendor, this.chargingStation.getBootNotificationRequest().chargeBoxSerialNumber,
+              this.chargingStation.getBootNotificationRequest().firmwareVersion).catch(() => { /* This is intentional */ });
+          }, Constants.OCPP_TRIGGER_MESSAGE_DELAY);
+          return Constants.OCPP_TRIGGER_MESSAGE_RESPONSE_ACCEPTED;
+        case MessageTrigger.Heartbeat:
+          setTimeout(() => {
+            this.chargingStation.ocppRequestService.sendHeartbeat().catch(() => { /* This is intentional */ });
+          }, Constants.OCPP_TRIGGER_MESSAGE_DELAY);
+          return Constants.OCPP_TRIGGER_MESSAGE_RESPONSE_ACCEPTED;
+        default:
+          return Constants.OCPP_TRIGGER_MESSAGE_RESPONSE_NOT_IMPLEMENTED;
+      }
+    } catch (error) {
+      return this.handleIncomingRequestError(IncomingRequestCommand.TRIGGER_MESSAGE, error, Constants.OCPP_TRIGGER_MESSAGE_RESPONSE_REJECTED);
     }
   }
 }

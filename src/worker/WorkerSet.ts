@@ -23,7 +23,7 @@ export default class WorkerSet<T> extends WorkerAbstract {
   constructor(workerScript: string, maxElementsPerWorker = 1, workerStartDelay?: number, opts?: WorkerOptions) {
     super(workerScript, workerStartDelay);
     this.maxElementsPerWorker = maxElementsPerWorker;
-    this.messageHandler = opts?.messageHandler ?? (() => { });
+    this.messageHandler = opts?.messageHandler ?? (() => { /* This is intentional */ });
     this.workerSet = new Set<WorkerSetElement>();
   }
 
@@ -82,7 +82,7 @@ export default class WorkerSet<T> extends WorkerAbstract {
     worker.on('message', (msg) => {
       (async () => {
         await this.messageHandler(msg);
-      })().catch(() => {});
+      })().catch(() => { /* This is intentional */ });
     });
     worker.on('error', () => { /* This is intentional */ });
     worker.on('exit', (code) => {
@@ -94,7 +94,6 @@ export default class WorkerSet<T> extends WorkerAbstract {
 
   private getLastWorkerSetElement(): WorkerSetElement {
     let workerSetElement: WorkerSetElement;
-    // eslint-disable-next-line no-empty
     for (workerSetElement of this.workerSet) { /* This is intentional */ }
     return workerSetElement;
   }
