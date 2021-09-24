@@ -1,5 +1,3 @@
-// Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import { Configuration, Connection, IDatabaseDriver, MikroORM, Options } from '@mikro-orm/core';
 import { MikroORMDBType, StorageType } from '../../types/Storage';
 

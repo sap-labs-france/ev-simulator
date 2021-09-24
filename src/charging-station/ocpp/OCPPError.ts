@@ -1,5 +1,3 @@
-// Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import { IncomingRequestCommand, RequestCommand } from '../../types/ocpp/Requests';
 
 import BaseError from '../../exception/BaseError';

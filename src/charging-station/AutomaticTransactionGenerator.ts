@@ -1,5 +1,3 @@
-// Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import { AuthorizationStatus, AuthorizeResponse, StartTransactionResponse, StopTransactionReason, StopTransactionResponse } from '../types/ocpp/Transaction';
 
 import ChargingStation from './ChargingStation';

@@ -1,5 +1,3 @@
-// Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import { AvailabilityType, BootNotificationRequest, IncomingRequest, IncomingRequestCommand, Request } from '../types/ocpp/Requests';
 import { BootNotificationResponse, RegistrationStatus } from '../types/ocpp/Responses';
 import ChargingStationConfiguration, { ConfigurationKey } from '../types/ChargingStationConfiguration';

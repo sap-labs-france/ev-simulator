@@ -1,8 +1,4 @@
-// Copyright Jerome Benoit. 2021. All Rights Reserved.
 
-/**
- * Rationale: https://wiki.piment-noir.org/doku.php/en:cs:modelling_multi-phased_electrical_system_interconnexion
- */
 
 /**
  * Targeted to AC related values calculation.

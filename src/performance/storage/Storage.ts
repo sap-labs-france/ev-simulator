@@ -1,5 +1,3 @@
-// Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import { DBName, StorageType } from '../../types/Storage';
 
 import Statistics from '../../types/Statistics';

@@ -1,5 +1,3 @@
-// Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import Constants from '../../utils/Constants';
 import FileUtils from '../../utils/FileUtils';
 import Statistics from '../../types/Statistics';

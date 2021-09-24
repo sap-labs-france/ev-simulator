@@ -1,5 +1,3 @@
-// Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import { WorkerMessageEvents, WorkerOptions, WorkerSetElement } from '../types/Worker';
 
 import Utils from '../utils/Utils';

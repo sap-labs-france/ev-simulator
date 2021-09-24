@@ -1,5 +1,3 @@
-// Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import { JSONFileStorage } from './JSONFileStorage';
 import { MikroORMStorage } from './MikroORMStorage';
 import { MongoDBStorage } from './MongoDBStorage';

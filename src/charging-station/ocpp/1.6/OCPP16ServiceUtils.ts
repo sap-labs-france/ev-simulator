@@ -1,5 +1,3 @@
-// Partial Copyright Jerome Benoit. 2021. All Rights Reserved.
-
 import { MeterValueContext, MeterValueLocation, MeterValueUnit, OCPP16MeterValue, OCPP16MeterValueMeasurand, OCPP16MeterValuePhase, OCPP16SampledValue } from '../../../types/ocpp/1.6/MeterValues';
 
 import ChargingStation from '../../ChargingStation';
