@@ -8,5 +8,5 @@ updates:
     labels:
       - 'dependencies'
     reviewers:
-      - 'jerome-benoit'
+      - 'sap-labs-france'
     versioning-strategy: increase

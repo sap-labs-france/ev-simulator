@@ -1,5 +1,5 @@
 applications:
-- name: charging-stations-simulator
+- name: ev-simulator
   memory: 1G
   disk_quota: 1G
   instances: 1

@@ -1,4 +1,4 @@
-# [charging-stations-simulator](https://github.com/jerome-benoit/charging-stations-simulator)
+# [ev-simulator](https://github.com/sap-labs-france/ev-simulator)
 
 ## Summary
 
