@@ -8,5 +8,5 @@ updates:
     labels:
       - 'dependencies'
     reviewers:
-      - 'sap-labs-france'
+      - 'LucasBrazi06'
     versioning-strategy: increase
