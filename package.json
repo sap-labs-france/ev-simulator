@@ -98,7 +98,7 @@
     "clinic": "^9.0.0",
     "cross-env": "^7.0.3",
     "eslint": "^7.32.0",
-    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-import": "^2.25.1",
     "eslint-plugin-jsdoc": "^36.1.0",
     "eslint-plugin-node": "^11.1.0",
     "expect": "^27.2.4",
