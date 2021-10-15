@@ -78,8 +78,8 @@
     "ws": "^8.2.3"
   },
   "optionalDependencies": {
+    "utf-8-validate": "^5.0.7"
     "bufferutil": "^4.0.5",
-    "utf-8-validate": "^5.0.6"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
