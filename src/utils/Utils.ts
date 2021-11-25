@@ -13,7 +13,7 @@ export default class Utils {
     return uuid();
   }
 
-  public static async sleep(milliSeconds: number): Promise<NodeJS.Timeout> {
+  public static async sleep(milliSeconds: number): Promise<any> {
     return new Promise((resolve) => setTimeout(resolve, milliSeconds));
   }
 
