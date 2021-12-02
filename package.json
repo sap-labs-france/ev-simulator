@@ -82,7 +82,7 @@
     "bufferutil": "^4.0.5"
   },
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@mikro-orm/cli": "^4.5.9",
     "@rollup/plugin-json": "^4.1.0",
     "@types/mocha": "^9.0.0",
