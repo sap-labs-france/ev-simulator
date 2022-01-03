@@ -79,7 +79,7 @@
   },
   "optionalDependencies": {
     "utf-8-validate": "^5.0.7",
-    "bufferutil": "^4.0.5"
+    "bufferutil": "^4.0.6"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
