@@ -66,7 +66,7 @@
     "@mikro-orm/sqlite": "^4.5.10",
     "basic-ftp": "^4.6.6",
     "chalk": "^4.1.2",
-    "mongodb": "^4.2.2",
+    "mongodb": "^4.3.0",
     "poolifier": "^2.1.0",
     "proper-lockfile": "^4.1.2",
     "source-map-support": "^0.5.20",
