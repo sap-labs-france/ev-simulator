@@ -75,7 +75,7 @@
     "uuid": "^8.3.2",
     "winston": "^3.4.0",
     "winston-daily-rotate-file": "^4.5.5",
-    "ws": "^8.4.1"
+    "ws": "^8.4.2"
   },
   "optionalDependencies": {
     "utf-8-validate": "^5.0.8",
@@ -97,7 +97,7 @@
     "auto-changelog": "^2.3.0",
     "clinic": "^11.0.0",
     "cross-env": "^7.0.3",
-    "eslint": "^7.32.0",
+    "eslint": "^8.7.0",
     "eslint-plugin-jsdoc": "^37.6.1",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-node": "^11.1.0",
