@@ -85,7 +85,7 @@
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@mikro-orm/cli": "^4.5.10",
     "@rollup/plugin-json": "^4.1.0",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^9.1.0",
     "@types/mochawesome": "^6.2.1",
     "@types/node": "^16.11.12",
     "@types/proper-lockfile": "^4.1.2",
