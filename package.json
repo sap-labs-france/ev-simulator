@@ -78,7 +78,7 @@
     "ws": "^8.4.2"
   },
   "optionalDependencies": {
-    "utf-8-validate": "^5.0.8",
+    "utf-8-validate": "^5.0.9",
     "bufferutil": "^4.0.6"
   },
   "devDependencies": {
