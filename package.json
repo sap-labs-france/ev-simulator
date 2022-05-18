@@ -71,7 +71,7 @@
     "proper-lockfile": "^4.1.2",
     "source-map-support": "^0.5.20",
     "tar": "^6.1.11",
-    "tslib": "^2.3.1",
+    "tslib": "^2.4.0",
     "uuid": "^8.3.2",
     "winston": "^3.5.1",
     "winston-daily-rotate-file": "^4.6.0",
