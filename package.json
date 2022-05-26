@@ -60,7 +60,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "@mikro-orm/core": "^4.5.9",
+    "@mikro-orm/core": "^5.1.4",
     "@mikro-orm/mariadb": "^4.5.10",
     "@mikro-orm/reflection": "^4.5.10",
     "@mikro-orm/sqlite": "^4.5.10",
