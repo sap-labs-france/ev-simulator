@@ -75,7 +75,7 @@
     "uuid": "^8.3.2",
     "winston": "^3.5.1",
     "winston-daily-rotate-file": "^4.6.0",
-    "ws": "^8.4.2"
+    "ws": "^8.7.0"
   },
   "optionalDependencies": {
     "utf-8-validate": "^5.0.8",
@@ -91,7 +91,7 @@
     "@types/proper-lockfile": "^4.1.2",
     "@types/tar": "^4.0.5",
     "@types/uuid": "^8.3.4",
-    "@types/ws": "^8.2.2",
+    "@types/ws": "^8.5.3",
     "@typescript-eslint/parser": "^4.33.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "auto-changelog": "^2.3.0",
