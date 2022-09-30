@@ -1,6 +1,6 @@
 {
   "supervisionURLs": [
-    "ws://localhost:8010/OCPP16/5be7fb271014d90008992f06"
+    "wss://ocpp16j.rmacharge.fr/OCPP16/<ORGID>/<TOKENID>"
   ],
   "distributeStationsToTenantsEqually": true,
   "performanceStorage": {
