@@ -49,7 +49,7 @@ But the modifications to test have to be done to the files in the build result d
 
 Key | Value(s) | Default Value | Value type | Description 
 --- | -------| --------------| ---------- | ------------
-supervisionURLs | | [] | string[] |  array of connection URIs to OCPP-J servers
+supervisionURLs | | [] | string[] |  array of connection URIs to OCPP-J servers, where ORGID is the ID of the organization to add EV station and TOKENID is the token created for it.
 distributeStationsToTenantsEqually | true/false | true | boolean | distribute charging stations uniformly to the OCPP-J servers
 workerProcess | workerSet/staticPool/dynamicPool | workerSet | string | worker threads process type
 workerStartDelay | | 500 | integer | milliseconds to wait at charging station worker threads startup
