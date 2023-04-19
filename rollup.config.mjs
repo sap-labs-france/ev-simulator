@@ -3,7 +3,7 @@ import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
 import istanbul from 'rollup-plugin-istanbul';
 import json from '@rollup/plugin-json';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import ts from 'rollup-plugin-ts';
 
 const isDevelopmentBuild = process.env.BUILD === 'development';
@@ -18,9 +18,9 @@ export default {
     sourcemap: true,
     preserveModules: true,
     preserveModulesRoot: 'src',
-    ...!isDevelopmentBuild && { plugins: [terser({ numWorkers: 2 })] }
+    ...!isDevelopmentBuild && { plugins: [terser({ maxWorkers: 2 })] }
   },
-  external: ['basic-ftp', 'chalk', 'crypto', 'fs', '@mikro-orm/core', '@mikro-orm/reflection', 'mongodb', 'path', 'perf_hooks', 'poolifier', 'proper-lockfile', 'reflect-metadata', 'tar', 'url', 'uuid', 'ws', 'winston-daily-rotate-file', 'winston/lib/winston/transports', 'winston', 'worker_threads'],
+  external: ['basic-ftp', 'ansi-colors', 'crypto', 'fs', '@mikro-orm/core', '@mikro-orm/reflection', 'mongodb', 'path', 'perf_hooks', 'poolifier', 'proper-lockfile', 'reflect-metadata', 'tar', 'url', 'uuid', 'ws', 'winston-daily-rotate-file', 'winston/lib/winston/transports', 'winston', 'worker_threads'],
   plugins: [
     json(),
     ts({

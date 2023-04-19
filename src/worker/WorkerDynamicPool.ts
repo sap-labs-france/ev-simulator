@@ -25,7 +25,7 @@ export default class WorkerDynamicPool<T> extends WorkerAbstract {
   }
 
   get size(): number {
-    return this.pool.workers.length;
+    return this.pool.workerNodes.length;
   }
 
   get maxElementsPerWorker(): number | null {

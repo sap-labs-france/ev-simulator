@@ -6,10 +6,10 @@ import { StorageFactory } from '../performance/storage/StorageFactory';
 import Utils from '../utils/Utils';
 import WorkerAbstract from '../worker/WorkerAbstract';
 import WorkerFactory from '../worker/WorkerFactory';
-import chalk from 'chalk';
 import { isMainThread } from 'worker_threads';
 import path from 'path';
 import { version } from '../../package.json';
+import ansiColors from 'ansi-colors';
 
 export default class Bootstrap {
   private static instance: Bootstrap | null = null;
@@ -55,23 +55,23 @@ export default class Bootstrap {
                 Bootstrap.numberOfChargingStations++;
               }
             } catch (error) {
-              console.error(chalk.red('Charging station start with template file ' + stationURL.file + ' error '), error);
+              console.error(ansiColors.red('Charging station start with template file ' + stationURL.file + ' error '), error);
             }
           }
         } else {
-          console.warn(chalk.yellow('No stationTemplateURLs defined in configuration, exiting'));
+          console.warn(ansiColors.yellow('No stationTemplateURLs defined in configuration, exiting'));
         }
         if (Bootstrap.numberOfChargingStations === 0) {
-          console.warn(chalk.yellow('No charging station template enabled in configuration, exiting'));
+          console.warn(ansiColors.yellow('No charging station template enabled in configuration, exiting'));
         } else {
-          console.log(chalk.green(`Charging stations simulator ${this.version} started with ${Bootstrap.numberOfChargingStations.toString()} charging station(s) and ${Utils.workerDynamicPoolInUse() ? `${Configuration.getWorkerPoolMinSize().toString()}/` : ''}${Bootstrap.workerImplementation.size}${Utils.workerPoolInUse() ? `/${Configuration.getWorkerPoolMaxSize().toString()}` : ''} worker(s) concurrently running in '${Configuration.getWorkerProcess()}' mode${Bootstrap.workerImplementation.maxElementsPerWorker ? ` (${Bootstrap.workerImplementation.maxElementsPerWorker} charging station(s) per worker)` : ''}`));
+          console.log(ansiColors.green(`Charging stations simulator ${this.version} started with ${Bootstrap.numberOfChargingStations.toString()} charging station(s) and ${Utils.workerDynamicPoolInUse() ? `${Configuration.getWorkerPoolMinSize().toString()}/` : ''}${Bootstrap.workerImplementation.size}${Utils.workerPoolInUse() ? `/${Configuration.getWorkerPoolMaxSize().toString()}` : ''} worker(s) concurrently running in '${Configuration.getWorkerProcess()}' mode${Bootstrap.workerImplementation.maxElementsPerWorker ? ` (${Bootstrap.workerImplementation.maxElementsPerWorker} charging station(s) per worker)` : ''}`));
         }
         this.started = true;
       } catch (error) {
-        console.error(chalk.red('Bootstrap start error '), error);
+        console.error(ansiColors.red('Bootstrap start error '), error);
       }
     } else {
-      console.error(chalk.red('Cannot start an already started charging stations simulator'));
+      console.error(ansiColors.red('Cannot start an already started charging stations simulator'));
     }
   }
 
@@ -80,7 +80,7 @@ export default class Bootstrap {
       await Bootstrap.workerImplementation.stop();
       await Bootstrap.storage.close();
     } else {
-      console.error(chalk.red('Trying to stop the charging stations simulator while not started'));
+      console.error(ansiColors.red('Trying to stop the charging stations simulator while not started'));
     }
     this.started = false;
   }

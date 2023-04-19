@@ -4,7 +4,7 @@ import Constants from './Constants';
 import { StorageType } from '../types/Storage';
 import type { WorkerChoiceStrategy } from 'poolifier';
 import { WorkerProcessType } from '../types/Worker';
-import chalk from 'chalk';
+import ansiColors from 'ansi-colors';
 import fs from 'fs';
 import path from 'path';
 
@@ -59,7 +59,7 @@ export default class Configuration {
   static getStationTemplateURLs(): StationTemplateURL[] {
     Configuration.getConfig().stationTemplateURLs.forEach((stationURL: StationTemplateURL) => {
       if (!Configuration.isUndefined(stationURL['numberOfStation'])) {
-        console.error(chalk`{green ${Configuration.logPrefix()}} {red Deprecated configuration key 'numberOfStation' usage for template file '${stationURL.file}' in 'stationTemplateURLs'. Use 'numberOfStations' instead}`);
+        console.error(`{${ansiColors.green} ${Configuration.logPrefix()}} {${ansiColors.red} Deprecated configuration key 'numberOfStation' usage for template file '${stationURL.file}' in 'stationTemplateURLs'. Use 'numberOfStations' instead}`);
       }
     });
     // Read conf
@@ -139,9 +139,9 @@ export default class Configuration {
   private static warnDeprecatedConfigurationKey(key: string, sectionName?: string, logMsgToAppend = '') {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (sectionName && !Configuration.isUndefined(Configuration.getConfig()[sectionName]) && !Configuration.isUndefined(Configuration.getConfig()[sectionName][key])) {
-      console.error(chalk`{green ${Configuration.logPrefix()}} {red Deprecated configuration key '${key}' usage in section '${sectionName}'${logMsgToAppend && '. ' + logMsgToAppend}}`);
+      console.error(`{${ansiColors.green} ${Configuration.logPrefix()}} {${ansiColors.red} Deprecated configuration key '${key}' usage in section '${sectionName}'${logMsgToAppend && '. ' + logMsgToAppend}}`);
     } else if (!Configuration.isUndefined(Configuration.getConfig()[key])) {
-      console.error(chalk`{green ${Configuration.logPrefix()}} {red Deprecated configuration key '${key}' usage${logMsgToAppend && '. ' + logMsgToAppend}}`);
+      console.error(`{${ansiColors.green} ${Configuration.logPrefix()}} {${ansiColors.red} Deprecated configuration key '${key}' usage${logMsgToAppend && '. ' + logMsgToAppend}}`);
     }
   }
 
@@ -199,13 +199,13 @@ export default class Configuration {
   private static handleFileException(logPrefix: string, fileType: string, filePath: string, error: NodeJS.ErrnoException): void {
     const prefix = logPrefix.length !== 0 ? logPrefix + ' ' : '';
     if (error.code === 'ENOENT') {
-      console.error(chalk.green(prefix) + chalk.red(fileType + ' file ' + filePath + ' not found: '), error);
+      console.error(ansiColors.green(prefix) + ansiColors.red(fileType + ' file ' + filePath + ' not found: '), error);
     } else if (error.code === 'EEXIST') {
-      console.error(chalk.green(prefix) + chalk.red(fileType + ' file ' + filePath + ' already exists: '), error);
+      console.error(ansiColors.green(prefix) + ansiColors.red(fileType + ' file ' + filePath + ' already exists: '), error);
     } else if (error.code === 'EACCES') {
-      console.error(chalk.green(prefix) + chalk.red(fileType + ' file ' + filePath + ' access denied: '), error);
+      console.error(ansiColors.green(prefix) + ansiColors.red(fileType + ' file ' + filePath + ' access denied: '), error);
     } else {
-      console.error(chalk.green(prefix) + chalk.red(fileType + ' file ' + filePath + ' error: '), error);
+      console.error(ansiColors.green(prefix) + ansiColors.red(fileType + ' file ' + filePath + ' error: '), error);
     }
     throw error;
   }
