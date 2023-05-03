@@ -1,4 +1,4 @@
-import { OCPP16AvailabilityStatus, OCPP16BootNotificationResponse, OCPP16ChargingProfileStatus, OCPP16ClearChargingProfileStatus, OCPP16ConfigurationStatus, OCPP16RegistrationStatus, OCPP16TriggerMessageStatus, OCPP16UnlockStatus } from './1.6/Responses';
+import { OCPP16AvailabilityStatus, OCPP16BootNotificationResponse, OCPP16CancelReservationStatus, OCPP16ChargingProfileStatus, OCPP16ClearChargingProfileStatus, OCPP16ConfigurationStatus, OCPP16RegistrationStatus, OCPP16ReservationStatus, OCPP16TriggerMessageStatus, OCPP16UnlockStatus } from './1.6/Responses';
 
 export type BootNotificationResponse = OCPP16BootNotificationResponse;
 
@@ -51,4 +51,16 @@ export type TriggerMessageStatus = OCPP16TriggerMessageStatus;
 
 export const TriggerMessageStatus = {
   ...OCPP16TriggerMessageStatus
+};
+
+export type ReservationStatus = OCPP16ReservationStatus;
+
+export const ReservationStatus = {
+  ...OCPP16ReservationStatus
+};
+
+export type CancelReservationStatus = OCPP16CancelReservationStatus;
+
+export const CancelReservationStatus = {
+  ...OCPP16CancelReservationStatus
 };

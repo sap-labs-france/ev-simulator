@@ -1,0 +1,17 @@
+# Node & npm
+node_modules
+npm_debug.log
+
+# NYC
+*output*
+
+# Cloud Foundry
+.cf*
+
+# Other logs generated
+*.log
+
+# Build Scripts
+*.sh
+
+# Editor specifc viles

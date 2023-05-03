@@ -136,3 +136,15 @@ export interface OCPP16TriggerMessageRequest {
   requestedMessage: MessageTrigger;
   connectorId?: number
 }
+
+export interface OCPP16ReserveNowRequest {
+  connectorId: string;
+  expiryDate: Date;
+  idTag: string;
+  parentIdTag?: string;
+  reservationId: number;
+}
+
+export interface OCPP16CancelReservationRequest {
+  reservationId: number;
+}

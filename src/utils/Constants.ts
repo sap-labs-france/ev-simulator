@@ -1,4 +1,4 @@
-import { AvailabilityStatus, ChargingProfileStatus, ClearChargingProfileStatus, ConfigurationStatus, DefaultStatus, TriggerMessageStatus, UnlockStatus } from '../types/ocpp/Responses';
+import { AvailabilityStatus, CancelReservationStatus, ChargingProfileStatus, ClearChargingProfileStatus, ConfigurationStatus, DefaultStatus, ReservationStatus, TriggerMessageStatus, UnlockStatus } from '../types/ocpp/Responses';
 
 import { MeterValueMeasurand } from '../types/ocpp/MeterValues';
 
@@ -55,4 +55,13 @@ export default class Constants {
   static readonly DEFAULT_PERFORMANCE_RECORDS_FILENAME = 'performanceRecords.json';
   static readonly DEFAULT_PERFORMANCE_RECORDS_DB_NAME = 'ev-simulator';
   static readonly PERFORMANCE_RECORDS_TABLE = 'performance_records';
+
+  static readonly OCPP_RESERVATION_RESPONSE_ACCEPTED = Object.freeze({ status: ReservationStatus.ACCEPTED }); // Reservation has been made
+  static readonly OCPP_RESERVATION_RESPONSE_FAULTED = Object.freeze({ status: ReservationStatus.FAULTED }); // Reservation has not been made, because of connector in FAULTED state
+  static readonly OCPP_RESERVATION_RESPONSE_OCCUPIED = Object.freeze({ status: ReservationStatus.OCCUPIED }); // Reservation has not been made, because all connectors are OCCUPIED
+  static readonly OCPP_RESERVATION_RESPONSE_REJECTED = Object.freeze({ status: ReservationStatus.REJECTED }); // Reservation has not been made, because CS is not configured to accept reservations
+  static readonly OCPP_RESERVATION_RESPONSE_UNAVAILABLE = Object.freeze({ status: ReservationStatus.UNAVAILABLE }); // Reservation has not been made, because connectors are spec. connector is in UNAVAILABLE state
+
+  static readonly OCPP_CANCEL_RESERVATION_RESPONSE_ACCEPTED = Object.freeze({ status: CancelReservationStatus.ACCEPTED }); // Reservation for id has been cancelled has been made
+  static readonly OCPP_CANCEL_RESERVATION_RESPONSE_REJECTED = Object.freeze({ status: CancelReservationStatus.REJECTED }); // Reservation could not be cancelled, because there is no reservation active for id
 }

@@ -6,6 +6,10 @@ Simple [node.js](https://nodejs.org/) program to simulate a set of charging stat
 
 ## Prerequisites
 
+For using the ev-simulator you have to install Node and NPM on your local machine. The minimum required version for the tool are:
+- Node: &gt; 16.x.x
+- NPM: &gt; 8.x.x
+
 ### Windows
 
 * [Chocolatey](https://chocolatey.org/):
@@ -19,16 +23,16 @@ choco install -y nodejs-lts
 * [Homebrew](https://brew.sh/):
 
 ```shell
-brew install node@14
+brew install node@18
 ```
 
-### GNU/Linux: 
+### GNU/Linux:
 
 * [NodeSource](https://github.com/nodesource/distributions) Node.js Binary Distributions for version 14.X
 
 ## Configuration syntax
 
-All configuration files are in the JSON standard format.  
+All configuration files are in the JSON standard format.
 
 The charging stations simulator's main configuration parameters must be within the `src/assets/config.json` file. A configuration template file is available at [src/assets/config-template.json](src/assets/config-template.json).
 
@@ -36,18 +40,18 @@ All charging station templates are in the directory [src/assets/station-template
 
 A list of RFID tags must be defined for the automatic transaction generator with the default location and name `src/assets/authorization-tags.json`. A template file is available at [src/assets/authorization-tags-template.json](src/assets/authorization-tags-template.json).
 
-The charging stations simulator have an automatic configuration files reload feature at change for: 
+The charging stations simulator have an automatic configuration files reload feature at change for:
 * main configuration;
-* charging station templates; 
+* charging station templates;
 * authorization RFID tags.
 
-But the modifications to test have to be done to the files in the build result directory [dist/assets](dist/assets). Once the modifications are finished, they have to be reported or copied to the matching files in the build source directory [src/assets](src/assets) to ensure they will be taken into account at next build. 
+But the modifications to test have to be done to the files in the build result directory [dist/assets](dist/assets). Once the modifications are finished, they have to be reported or copied to the matching files in the build source directory [src/assets](src/assets) to ensure they will be taken into account at next build.
 
-### Main configuration 
+### Main configuration
 
 **src/assets/config.json**:
 
-Key | Value(s) | Default Value | Value type | Description 
+Key | Value(s) | Default Value | Value type | Description
 --- | -------| --------------| ---------- | ------------
 supervisionURLs | | [] | string[] |  array of connection URIs to OCPP-J servers
 distributeStationsToTenantsEqually | true/false | true | boolean | distribute charging stations uniformly to the OCPP-J servers
@@ -57,36 +61,36 @@ workerPoolMinSize | | 4 | integer | worker threads pool minimum number of thread
 workerPoolMaxSize | | 16 | integer | worker threads pool maximum number of threads
 workerPoolStrategy | ROUND_ROBIN/LESS_RECENTLY_USED/... | [poolifier](https://github.com/poolifier/poolifier) default: ROUND_ROBBIN | string | worker threads pool [poolifier](https://github.com/poolifier/poolifier) worker choice strategy
 chargingStationsPerWorker | | 1 | integer | number of charging stations per worker threads for the `workerSet` process type
-logStatisticsInterval | | 60 | integer | seconds between charging stations statistics output in the logs 
-logConsole | true/false | false | boolean | output logs on the console 
+logStatisticsInterval | | 60 | integer | seconds between charging stations statistics output in the logs
+logConsole | true/false | false | boolean | output logs on the console
 logFormat | | simple | string | winston log format
 logRotate | true/false | true | boolean | enable daily log files rotation
 logMaxFiles | | 7 | integer | maximum number of log files to keep
 logLevel | emerg/alert/crit/error/warning/notice/info/debug | info | string | winston logging level
 logFile | | combined.log | string | log file relative path
-logErrorFile | | error.log | string | error log file relative path 
+logErrorFile | | error.log | string | error log file relative path
 performanceStorage | | { "enabled": false, "type": "jsonfile", "file:///performanceRecords.json" } | { enabled: string; type: string; URI: string; } where type can be 'jsonfile' or 'mongodb' | performance storage configuration section
 stationTemplateURLs | | {}[] | { file: string; numberOfStations: number; }[] | array of charging station templates URIs configuration section (template file name and number of stations)
 
-#### Worker process model: 
+#### Worker process model:
 
 - **workerSet**:
   Worker set executing each a static number (chargingStationsPerWorker) of simulated charging stations from the total
 
 - **staticPool**:
-  Statically sized worker pool executing a static total number of simulated charging stations    
+  Statically sized worker pool executing a static total number of simulated charging stations
 
 - **dynamicPool**:
-  Dynamically sized worker pool executing a static total number of simulated charging stations 
+  Dynamically sized worker pool executing a static total number of simulated charging stations
 
 ### Charging station template
 
-Key | Value(s) | Default Value | Value type | Description 
+Key | Value(s) | Default Value | Value type | Description
 --- | -------| --------------| ---------- | ------------
 supervisionURL | | '' | string | connection URI to OCPP-J server
 supervisionUser | | '' | string | basic HTTP authentication user to OCPP-J server
 supervisionPassword | | '' | string | basic HTTP authentication password to OCPP-J server
-ocppVersion | 1.6 | 1.6 | string | OCPP version 
+ocppVersion | 1.6 | 1.6 | string | OCPP version
 ocppProtocol | json | json | string | OCPP protocol
 authorizationFile | | '' | string | RFID tags list file relative to src/assets path
 baseName | | '' | string | base name to build charging stations name
@@ -101,7 +105,7 @@ powerSharedByConnectors | true/false | false | boolean | charging stations power
 powerUnit | W/kW | W | string | charging stations power unit
 currentOutType | AC/DC | AC | string | charging stations current out type
 voltageOut | | AC:230/DC:400 | integer | charging stations voltage out
-numberOfPhases | 0/1/3 | AC:3/DC:0 | integer | charging stations number of phase(s) 
+numberOfPhases | 0/1/3 | AC:3/DC:0 | integer | charging stations number of phase(s)
 numberOfConnectors | | | integer\|integer[] | charging stations number of connector(s)
 useConnectorId0 | true/false | true | boolean | use connector id 0 definition from the template
 randomConnectors | true/false | false | boolean | randomize runtime connector id affectation from the connector id definition in template
@@ -264,7 +268,7 @@ make SUBMODULES_INIT=true
 
 ## OCPP-J standard parameters supported
 
-All kind of OCPP parameters are supported in a charging station template. The list here mention the standard ones also handled automatically in the simulator. 
+All kind of OCPP parameters are supported in a charging station template. The list here mention the standard ones also handled automatically in the simulator.
 
 ### Version 1.6
 

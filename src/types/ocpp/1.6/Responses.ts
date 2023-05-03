@@ -89,3 +89,25 @@ export enum OCPP16TriggerMessageStatus {
 export interface OCPP16TriggerMessageResponse {
   status: OCPP16TriggerMessageStatus
 }
+
+export enum OCPP16ReservationStatus {
+  ACCEPTED = 'Accepted',
+  FAULTED = 'Faulted',
+  OCCUPIED = 'Occupied',
+  REJECTED = 'Rejected',
+  UNAVAILABLE = 'Unavailable'
+}
+
+export interface OCPP16ReserveNowResponse {
+  status: OCPP16ReservationStatus;
+}
+
+export enum OCPP16CancelReservationStatus {
+  ACCEPTED = 'Accepted',
+  REJECTED = 'Rejected'
+}
+
+export interface OCPP16CancelReservationResponse {
+  status: OCPP16CancelReservationStatus;
+}
+
