@@ -297,15 +297,21 @@ export default class OCPP16IncomingRequestService extends OCPPIncomingRequestSer
       return this.notifyRemoteStartTransactionRejected(transactionConnectorId, commandPayload.idTag);
     }
     if (reserved) {
-      await this.handleReservedRemoteStartTransaction(transactionConnectorId,commandPayload);
+      return await this.handleReservedRemoteStartTransaction(transactionConnectorId,commandPayload);
     }
     return this.notifyRemoteStartTransactionRejected(transactionConnectorId, commandPayload.idTag);
   }
 
   private async notifyRemoteStartTransactionRejected(connectorId: number, idTag: string): Promise<DefaultResponse> {
-    if (this.chargingStation.getConnector(connectorId).status !== OCPP16ChargePointStatus.AVAILABLE) {
-      await this.chargingStation.ocppRequestService.sendStatusNotification(connectorId, OCPP16ChargePointStatus.AVAILABLE);
-      this.chargingStation.getConnector(connectorId).status = OCPP16ChargePointStatus.AVAILABLE;
+    switch (this.chargingStation.getConnector(connectorId).status) {
+      case ChargePointStatus.RESERVED:
+        logger.warn(this.chargingStation.logPrefix() + ' Remote starting transaction REJECTED on connector Id ' + connectorId.toString() + ', idTag ' + idTag + ', availability ' + this.chargingStation.getConnector(connectorId).availability + ', status ' + this.chargingStation.getConnector(connectorId).status);
+        await this.chargingStation.ocppRequestService.sendStatusNotification(connectorId, OCPP16ChargePointStatus.RESERVED);
+        break;
+      default:
+        await this.chargingStation.ocppRequestService.sendStatusNotification(connectorId, OCPP16ChargePointStatus.AVAILABLE);
+        this.chargingStation.getConnector(connectorId).status = OCPP16ChargePointStatus.AVAILABLE;
+        break;
     }
     logger.warn(this.chargingStation.logPrefix() + ' Remote starting transaction REJECTED on connector Id ' + connectorId.toString() + ', idTag ' + idTag + ', availability ' + this.chargingStation.getConnector(connectorId).availability + ', status ' + this.chargingStation.getConnector(connectorId).status);
     return Constants.OCPP_RESPONSE_REJECTED;
@@ -504,14 +510,15 @@ export default class OCPP16IncomingRequestService extends OCPPIncomingRequestSer
 
   private async handleReservedRemoteStartTransaction(connectorId: number,commandPayload: RemoteStartTransactionRequest): Promise<DefaultResponse> {
     const reservation = this.chargingStation.getReservationByConnectorId(connectorId);
-    if (!Utils.isUndefined(reservation)
-    && await this.isAuthorized(connectorId,commandPayload.idTag)
-    && (reservation.idTag === commandPayload.idTag || reservation.parentIdTag === commandPayload.idTag)) {
+    if (!Utils.isUndefined(reservation) && await this.isAuthorized(connectorId,commandPayload.idTag) && reservation.idTag === commandPayload.idTag) {
       await this.chargingStation.ocppRequestService.sendStatusNotification(connectorId, OCPP16ChargePointStatus.PREPARING);
-      const res = await this.chargingStation.ocppRequestService.sendStartTransaction(connectorId, commandPayload.idTag, null, reservation.reservationId);
-      if (res.idTagInfo.status === OCPP16AuthorizationStatus.ACCEPTED) {
-        logger.debug(this.chargingStation.logPrefix() + ' Reserved Transaction remotely STARTED on ' + this.chargingStation.stationInfo.chargingStationId + '#' + connectorId.toString() + ' for idTag ' + commandPayload.idTag);
-        return Constants.OCPP_RESPONSE_ACCEPTED;
+      this.chargingStation.getConnector(connectorId).status = OCPP16ChargePointStatus.PREPARING;
+      if (this.setRemoteStartTransactionChargingProfile(connectorId, commandPayload.chargingProfile)) {
+        if ((await this.chargingStation.ocppRequestService.sendStartTransaction(connectorId, commandPayload.idTag, null, reservation.reservationId)).idTagInfo.status === OCPP16AuthorizationStatus.ACCEPTED) {
+          logger.debug(this.chargingStation.logPrefix() + ' Reserved Transaction remotely STARTED on ' + this.chargingStation.stationInfo.chargingStationId + '#' + connectorId.toString() + ' for idTag ' + commandPayload.idTag);
+          this.chargingStation.removeReservation(reservation.reservationId);
+          return Constants.OCPP_RESPONSE_ACCEPTED;
+        }
       }
     }
   }
