@@ -64,4 +64,7 @@ export default class Constants {
 
   static readonly OCPP_CANCEL_RESERVATION_RESPONSE_ACCEPTED = Object.freeze({ status: CancelReservationStatus.ACCEPTED }); // Reservation for id has been cancelled has been made
   static readonly OCPP_CANCEL_RESERVATION_RESPONSE_REJECTED = Object.freeze({ status: CancelReservationStatus.REJECTED }); // Reservation could not be cancelled, because there is no reservation active for id
+
+  static readonly OCPP_SUPPORTED_FEATURE_PROFILE_RESERVATION = 'Reservation';
+  static readonly OCPP_RESERVE_CONNECTOR_ZERO_SUPPORTED = 'ReserveConnectorZeroSupported';
 }

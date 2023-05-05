@@ -28,7 +28,7 @@
       {
         "key": "SupportedFeatureProfiles",
         "readonly": true,
-        "value": "Core,LocalAuthListManagement"
+        "value": "Core,LocalAuthListManagement,Reservation"
       },
       {
         "key": "LocalAuthListEnabled",
@@ -51,6 +51,11 @@
         "value": "VendorValue",
         "visible": false,
         "reboot": true
+      },
+      {
+        "key": "ReserveConnectorZeroSupported",
+        "readonly": false,
+        "value": "false"
       }
     ]
   },

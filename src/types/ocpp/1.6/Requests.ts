@@ -15,7 +15,9 @@ export enum OCPP16RequestCommand {
   START_TRANSACTION = 'StartTransaction',
   STOP_TRANSACTION = 'StopTransaction',
   METER_VALUES = 'MeterValues',
-  DIAGNOSTICS_STATUS_NOTIFICATION = 'DiagnosticsStatusNotification'
+  DIAGNOSTICS_STATUS_NOTIFICATION = 'DiagnosticsStatusNotification',
+  RESERVE_NOW = 'ReserveNow',
+  CANCEL_RESERVATION = 'CancelReservation'
 }
 
 export enum OCPP16IncomingRequestCommand {
@@ -30,7 +32,9 @@ export enum OCPP16IncomingRequestCommand {
   REMOTE_START_TRANSACTION = 'RemoteStartTransaction',
   REMOTE_STOP_TRANSACTION = 'RemoteStopTransaction',
   GET_DIAGNOSTICS = 'GetDiagnostics',
-  TRIGGER_MESSAGE = 'TriggerMessage'
+  TRIGGER_MESSAGE = 'TriggerMessage',
+  RESERVE_NOW = 'ReserveNow',
+  CANCEL_RESERVATION = 'CancelReservation'
 }
 
 export type HeartbeatRequest = EmptyObject;
@@ -138,7 +142,7 @@ export interface OCPP16TriggerMessageRequest {
 }
 
 export interface OCPP16ReserveNowRequest {
-  connectorId: string;
+  connectorId: number;
   expiryDate: Date;
   idTag: string;
   parentIdTag?: string;

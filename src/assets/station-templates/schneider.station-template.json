@@ -25,7 +25,7 @@
       {
         "key": "SupportedFeatureProfiles",
         "readonly": true,
-        "value": "Core,LocalAuthListManagement"
+        "value": "Core,LocalAuthListManagement,Reservation"
       },
       {
         "key": "LocalAuthListEnabled",
@@ -41,6 +41,11 @@
         "key": "WebSocketPingInterval",
         "readonly": false,
         "value": "60"
+      },
+      {
+        "key": "ReserveConnectorZeroSupported",
+        "readonly": false,
+        "value": "false"
       }
     ]
   },

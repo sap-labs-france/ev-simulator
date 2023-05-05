@@ -64,7 +64,8 @@ export default class OCPP16RequestService extends OCPPRequestService {
     }
   }
 
-  public async sendAuthorize(connectorId: number, idTag?: string): Promise<OCPP16AuthorizeResponse> {
+  public async sendAuthorize(connectorId: number, idTag?: string, parentIdTag?: string): Promise<OCPP16AuthorizeResponse> {
+    // TODO: Including parentIdTag inside AuthorizeRequest
     try {
       const payload: AuthorizeRequest = {
         ...!Utils.isUndefined(idTag) ? { idTag } : { idTag: Constants.TRANSACTION_DEFAULT_IDTAG },
@@ -76,7 +77,8 @@ export default class OCPP16RequestService extends OCPPRequestService {
     }
   }
 
-  public async sendStartTransaction(connectorId: number, idTag?: string): Promise<OCPP16StartTransactionResponse> {
+  public async sendStartTransaction(connectorId: number, idTag?: string, parentIdTag?: string, reservationId?: number): Promise<OCPP16StartTransactionResponse> {
+    // TODO: Including parentIdTag inside StartTransactionRequest
     try {
       const payload: StartTransactionRequest = {
         connectorId,
@@ -84,6 +86,9 @@ export default class OCPP16RequestService extends OCPPRequestService {
         meterStart: this.chargingStation.getEnergyActiveImportRegisterByConnectorId(connectorId),
         timestamp: new Date().toISOString(),
       };
+      if (!Utils.isNullOrUndefined(reservationId)) {
+        payload.reservationId = reservationId;
+      }
       return await this.sendMessage(Utils.generateUUID(), payload, MessageType.CALL_MESSAGE, OCPP16RequestCommand.START_TRANSACTION) as OCPP16StartTransactionResponse;
     } catch (error) {
       this.handleRequestError(OCPP16RequestCommand.START_TRANSACTION, error);

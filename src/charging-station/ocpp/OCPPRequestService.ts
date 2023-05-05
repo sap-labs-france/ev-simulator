@@ -71,7 +71,7 @@ export default abstract class OCPPRequestService {
 
       /**
        * Function that will receive the request's rejection
-       *
+       * 
        * @param error
        */
       function rejectCallback(error: OCPPError): void {
@@ -120,8 +120,8 @@ export default abstract class OCPPRequestService {
   public abstract sendHeartbeat(): Promise<void>;
   public abstract sendBootNotification(chargePointModel: string, chargePointVendor: string, chargeBoxSerialNumber?: string, firmwareVersion?: string, chargePointSerialNumber?: string, iccid?: string, imsi?: string, meterSerialNumber?: string, meterType?: string): Promise<BootNotificationResponse>;
   public abstract sendStatusNotification(connectorId: number, status: ChargePointStatus, errorCode?: ChargePointErrorCode): Promise<void>;
-  public abstract sendAuthorize(connectorId: number, idTag?: string): Promise<AuthorizeResponse>;
-  public abstract sendStartTransaction(connectorId: number, idTag?: string): Promise<StartTransactionResponse>;
+  public abstract sendAuthorize(connectorId: number, idTag?: string, parentIdTag?: string): Promise<AuthorizeResponse>;
+  public abstract sendStartTransaction(connectorId: number, idTag?: string, parentIdTag?: string, reservationId?: number): Promise<StartTransactionResponse>;
   public abstract sendStopTransaction(transactionId: number, meterStop: number, idTag?: string, reason?: StopTransactionReason): Promise<StopTransactionResponse>;
   public abstract sendMeterValues(connectorId: number, transactionId: number, interval: number): Promise<void>;
   public abstract sendTransactionBeginMeterValues(connectorId: number, transactionId: number, beginMeterValue: MeterValue): Promise<void>;

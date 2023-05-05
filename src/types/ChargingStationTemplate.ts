@@ -2,6 +2,7 @@ import ChargingStationConfiguration from './ChargingStationConfiguration';
 import { Connectors } from './Connectors';
 import { OCPPProtocol } from './ocpp/OCPPProtocol';
 import { OCPPVersion } from './ocpp/OCPPVersion';
+import { Reservation } from './ocpp/Reservation';
 
 export enum CurrentType {
   AC = 'AC',
@@ -71,4 +72,5 @@ export default interface ChargingStationTemplate {
   Configuration?: ChargingStationConfiguration;
   AutomaticTransactionGenerator: AutomaticTransactionGenerator;
   Connectors: Connectors;
+  reservation?: Reservation[];
 }
