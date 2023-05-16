@@ -450,15 +450,16 @@ export default class OCPP16IncomingRequestService extends OCPPIncomingRequestSer
             break;
           }
         default:
-          logger.info(`${this.chargingStation.logPrefix()} on connector ${connectorId} is now reserved for ${commandPayload.idTag}`);
           connector.status = ChargePointStatus.RESERVED;
           this.chargingStation.addReservation({ ...commandPayload });
           await this.chargingStation.ocppRequestService.sendStatusNotification(connectorId, OCPP16ChargePointStatus.RESERVED);
           response = Constants.OCPP_RESERVATION_RESPONSE_ACCEPTED;
+          logger.info(`${this.chargingStation.logPrefix()} on connector ${connectorId} is now reserved for ${commandPayload.idTag}`);
           break;
       }
       return response;
     } catch (error) {
+      connector.status = ChargePointStatus.AVAILABLE;
       return this.handleIncomingRequestError(IncomingRequestCommand.RESERVE_NOW, error, Constants.OCPP_RESERVATION_RESPONSE_FAULTED);
     }
   }

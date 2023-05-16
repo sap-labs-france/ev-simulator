@@ -115,7 +115,8 @@ export default class OCPP16RequestService extends OCPPRequestService {
         meterStop,
         timestamp: new Date().toISOString(),
         ...reason && { reason },
-        ...this.chargingStation.getTransactionDataMeterValues() && { transactionData: OCPP16ServiceUtils.buildTransactionDataMeterValues(this.chargingStation.getConnector(connectorId).transactionBeginMeterValue, transactionEndMeterValue) },
+        ...this.chargingStation.getTransactionDataMeterValues() &&
+          { transactionData: OCPP16ServiceUtils.buildTransactionDataMeterValues(this.chargingStation.getConnector(connectorId).transactionBeginMeterValue, transactionEndMeterValue) },
       };
       return await this.sendMessage(Utils.generateUUID(), payload, MessageType.CALL_MESSAGE, OCPP16RequestCommand.STOP_TRANSACTION) as OCPP16StartTransactionResponse;
     } catch (error) {

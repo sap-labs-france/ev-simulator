@@ -458,8 +458,8 @@ export default class ChargingStation {
   }
 
   public doesReservationExist(reservationId: number, reservation?: Reservation): [boolean, Reservation] {
-    const foundReservation = this.reservations.find((r) => r.reservationId === reservationId
-      || r.reservationId === reservation.reservationId);
+    const id = Utils.isNullOrUndefined(reservation) ? reservationId : reservation.reservationId;
+    const foundReservation = this.reservations.find((r) => r.reservationId === id);
     return Utils.isUndefined(foundReservation) ? [false,null] : [true,foundReservation];
   }
 
