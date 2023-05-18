@@ -34,6 +34,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import logger from '../utils/Logger';
 import path from 'path';
+import { OCPP16ChargePointStatus } from '../types/ocpp/1.6/ChargePointStatus';
 
 export default class ChargingStation {
   public stationTemplateFile: string;
@@ -59,6 +60,7 @@ export default class ChargingStation {
   private automaticTransactionGenerator!: AutomaticTransactionGenerator;
   private webSocketPingSetInterval!: NodeJS.Timeout;
   private reservations?: Reservation[];
+  private reservationExpiryDateSetInterval?: NodeJS.Timeout;
 
   constructor(index: number, stationTemplateFile: string) {
     this.index = index;
@@ -310,6 +312,9 @@ export default class ChargingStation {
     if (this.getEnableStatistics()) {
       this.performanceStatistics.start();
     }
+    if (this.supportsReservations()) {
+      this.startReservationExpiryDateSetInterval();
+    }
     this.openWSConnection();
     // Monitor authorization file
     this.startAuthorizationFileMonitoring();
@@ -424,62 +429,101 @@ export default class ChargingStation {
   }
 
   public supportsReservations(): boolean {
-    logger.info(`Check for reservation support in charging station (CS): ${this.logPrefix()}`);
+    logger.info(`${this.logPrefix()} Check for reservation support in charging station`);
     return this.getConfigurationKey('SupportedFeatureProfiles').value.includes('Reservation');
   }
 
-  public supportsReservationsOnConnectorId0(): boolean {
-    logger.info(`Check for reservation support on connector 0 in charging station (CS): ${this.logPrefix()}`);
+  public supportsReservationsOnConnectorZero(): boolean {
+    logger.info(`${this.logPrefix()} Check for reservation support on connector 0`);
     return this.supportsReservations() && this.getConfigurationKey(Constants.OCPP_RESERVE_CONNECTOR_ZERO_SUPPORTED).value === 'true';
   }
 
-  public addReservation(newReservation: Reservation): void {
+  public async addReservation(reservation: Reservation): Promise<void> {
     if (Utils.isNullOrUndefined(this.reservations)) {
       this.reservations = [];
     }
-    const [exists,foundReservation] = this.doesReservationExist(newReservation.reservationId);
+    const [exists,foundReservation] = this.doesReservationExists(reservation);
     if (exists) {
-      this.replaceExistingReservation(foundReservation,newReservation);
-    } else {
-      this.reservations.push(newReservation);
+      await this.removeReservation(foundReservation);
+      this.getConnector(foundReservation.connectorId).status = OCPP16ChargePointStatus.AVAILABLE;
     }
+    this.reservations.push(reservation);
+    this.getConnector(reservation.connectorId).status = OCPP16ChargePointStatus.RESERVED;
+    await this.ocppRequestService.sendStatusNotification(reservation.connectorId, OCPP16ChargePointStatus.RESERVED);
   }
 
-  public removeReservation(existingReservationId: number): void {
-    const index = this.reservations.findIndex((res) => res.reservationId === existingReservationId);
+  public async removeReservation(reservation: Reservation): Promise<void> {
+    const sameReservation = (r: Reservation) => r.id === reservation.id;
+    const index = this.reservations?.findIndex(sameReservation);
     this.reservations.splice(index,1);
+    this.getConnector(reservation.connectorId).status = OCPP16ChargePointStatus.AVAILABLE;
+    await this.ocppRequestService.sendStatusNotification(reservation.connectorId, OCPP16ChargePointStatus.AVAILABLE);
   }
 
-  public getReservation(reservationId: number, reservationIndex?: number): Reservation {
-    if (!Utils.isNullOrUndefined(reservationIndex)) {
-      return this.reservations[reservationIndex];
-    }
-    return this.reservations.find((r) => r.reservationId === reservationId);
+  public getReservationById(id: number): Reservation {
+    return this.reservations?.find((reservation) => reservation.id === id);
   }
 
-  public doesReservationExist(reservationId: number, reservation?: Reservation): [boolean, Reservation] {
-    const id = Utils.isNullOrUndefined(reservation) ? reservationId : reservation.reservationId;
-    const foundReservation = this.reservations.find((r) => r.reservationId === id);
+  public getReservationByTagId(id: string): Reservation {
+    return this.reservations?.find((reservation) => reservation.idTag === id);
+  }
+
+  public doesReservationExists(reservation: Partial<Reservation>): [boolean, Reservation] {
+    const sameReservation = (r: Reservation) => r.id === reservation.id;
+    const foundReservation = this.reservations?.find(sameReservation);
     return Utils.isUndefined(foundReservation) ? [false,null] : [true,foundReservation];
   }
 
-  public getReservationByConnectorId(connectorId: number): Reservation {
-    return this.reservations.find((r) => r.connectorId === connectorId);
+  public getReservationByConnectorId(id: number): Reservation {
+    return this.reservations?.find((reservation) => reservation.connectorId === id);
   }
 
-  public getAvailableConnector(): Connector {
-    for (const connectorId in this.connectors) {
-      const connector = this.getConnector(Utils.convertToInt(connectorId));
-      if (this.isConnectorAvailable(Utils.convertToInt(connectorId))
-        && connector.status === ChargePointStatus.AVAILABLE) {
-        return connector;
+  public getAvailableConnectors(): Connector[] {
+    const connectors: Connector[] = [];
+    for (const key in this.connectors) {
+      if (Utils.convertToInt(key) === 0) {
+        continue;
+      }
+      const connector = this.getConnector(Utils.convertToInt(key));
+      if (this.isConnectorAvailable(Utils.convertToInt(key)) && connector.status === ChargePointStatus.AVAILABLE) {
+        connectors.push(connector);
       }
     }
+    return connectors;
   }
 
-  private replaceExistingReservation(existingReservation: Reservation, newReservation: Reservation): void {
-    const existingReservationIndex = this.reservations.findIndex((r) => r.reservationId === existingReservation.reservationId);
-    this.reservations.splice(existingReservationIndex,1,newReservation);
+  public getNumberOfReservationsOnConnectorZero(): number {
+    const reservations = this.reservations?.filter((reservation) => reservation.connectorId === 0);
+    return Utils.isNullOrUndefined(reservations) ? 0 : reservations.length;
+  }
+
+  public startReservationExpiryDateSetInterval(customInterval?: number): void {
+    const interval = customInterval ?? Constants.RESERVATION_EXPIRATION_DATE_OBSERVATION_INTERVAL;
+    logger.info(`${this.logPrefix()} Reservation expiration date interval is set to ${interval} and starts on CS now`);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.reservationExpiryDateSetInterval = setInterval(async (): Promise<void> => {
+      if (!Utils.isNullOrUndefined(this.reservations) && !Utils.isEmptyArray(this.reservations)) {
+        for (const reservation of this.reservations) {
+          if (reservation.expiryDate.toString() < new Date().toISOString()) {
+            await this.removeReservation(reservation);
+            this.getConnector(reservation.connectorId).status = ChargePointStatus.AVAILABLE;
+            await this.ocppRequestService.sendStatusNotification(reservation.connectorId,OCPP16ChargePointStatus.AVAILABLE);
+            logger.info(`${this.logPrefix()} Reservation with ID ${reservation.id} reached expiration date and was removed from CS`);
+          }
+        }
+      }
+    }, interval);
+  }
+
+  public restartReservationExpiryDateSetInterval(): void {
+    this.stopReservationExpiryDateSetInterval();
+    this.startReservationExpiryDateSetInterval();
+  }
+
+  private stopReservationExpiryDateSetInterval(): void {
+    if (this.reservationExpiryDateSetInterval) {
+      clearInterval(this.reservationExpiryDateSetInterval);
+    }
   }
 
   private flushMessageQueue() {

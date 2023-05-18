@@ -67,4 +67,6 @@ export default class Constants {
 
   static readonly OCPP_SUPPORTED_FEATURE_PROFILE_RESERVATION = 'Reservation';
   static readonly OCPP_RESERVE_CONNECTOR_ZERO_SUPPORTED = 'ReserveConnectorZeroSupported';
+
+  static readonly RESERVATION_EXPIRATION_DATE_OBSERVATION_INTERVAL = 5000; // Ms
 }
