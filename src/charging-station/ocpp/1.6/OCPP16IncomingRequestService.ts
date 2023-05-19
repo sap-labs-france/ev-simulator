@@ -6,7 +6,6 @@ import { IncomingRequestCommand, RequestCommand } from '../../../types/ocpp/Requ
 import { OCPP16AuthorizationStatus, OCPP16StopTransactionReason } from '../../../types/ocpp/1.6/Transaction';
 
 import { ChargePointStatus } from '../../../types/ocpp/ChargePointStatus';
-import { Connector } from '../../../types/Connectors';
 import Constants from '../../../utils/Constants';
 import { DefaultResponse } from '../../../types/ocpp/Responses';
 import { ErrorType } from '../../../types/ocpp/ErrorType';

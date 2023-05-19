@@ -6,10 +6,10 @@ import { StorageFactory } from '../performance/storage/StorageFactory';
 import Utils from '../utils/Utils';
 import WorkerAbstract from '../worker/WorkerAbstract';
 import WorkerFactory from '../worker/WorkerFactory';
+import ansiColors from 'ansi-colors';
 import { isMainThread } from 'worker_threads';
 import path from 'path';
 import { version } from '../../package.json';
-import ansiColors from 'ansi-colors';
 
 export default class Bootstrap {
   private static instance: Bootstrap | null = null;

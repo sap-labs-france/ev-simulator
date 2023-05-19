@@ -1,4 +1,4 @@
-import ansiColors from "ansi-colors";
+import ansiColors from 'ansi-colors';
 
 export class WorkerUtils {
   public static defaultExitHandler = (code: number): void => {
