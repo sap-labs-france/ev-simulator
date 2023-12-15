@@ -82,7 +82,10 @@ export default class WorkerSet<T> extends WorkerAbstract {
         await this.messageHandler(msg);
       })().catch(() => { /* This is intentional */ });
     });
-    worker.on('error', () => { /* This is intentional */ });
+    worker.on('error', (err) => {
+      console.log('***Error');
+      console.error(err);
+    });
     worker.on('exit', (code) => {
       WorkerUtils.defaultExitHandler(code);
       this.workerSet.delete(this.getWorkerSetElementByWorker(worker));
